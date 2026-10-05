@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Durchstich-Test</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 640px; margin: 1rem auto; padding: 0 1rem; }
+  form, li { display: flex; gap: .5rem; margin-bottom: .5rem; }
+  input[type=text] { flex: 1; padding: .5rem; min-width: 0; }
+  button { padding: .5rem .75rem; cursor: pointer; }
+  ul { list-style: none; padding: 0; }
+  #status { color: #b00020; min-height: 1.5em; }
+</style>
+</head>
+<body>
+<h1>Durchstich-Test</h1>
+<p id="status"></p>
+
+<form id="addForm">
+  <input type="text" id="newText" maxlength="255" placeholder="Neuer Eintrag" required>
+  <button type="submit">Anlegen</button>
+</form>
+
+<ul id="list"></ul>
+
+<script>
+// Hier die URL deiner PHP-API eintragen (ohne Slash am Ende):
+const API = 'https://familieschmidt.biz/api';
+
+const $list = document.getElementById('list');
+const $status = document.getElementById('status');
+
+async function call(path, method = 'GET', body) {
+  const res = await fetch(API + path, {
+    method,
+    headers: body ? { 'Content-Type': 'application/json' } : {},
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || res.status);
+  return data;
+}
+
+async function load() {
+  try {
+    $status.textContent = '';
+    const rows = await call('/entries');
+    $list.replaceChildren(...rows.map(renderRow));
+  } catch (e) { $status.textContent = 'Fehler: ' + e.message; }
+}
+
+function renderRow(r) {
+  const li = document.createElement('li');
+  const input = document.createElement('input');
+  input.type = 'text'; input.maxLength = 255; input.value = r.text;
+
+  const save = document.createElement('button');
+  save.textContent = 'Speichern';
+  save.onclick = () => act(() => call('/entries/' + r.id, 'PUT', { text: input.value }));
+
+  const del = document.createElement('button');
+  del.textContent = 'Löschen';
+  del.onclick = () => act(() => call('/entries/' + r.id, 'DELETE'));
+
+  li.append(input, save, del);
+  return li;
+}
+
+async function act(fn) {
+  try { await fn(); await load(); }
+  catch (e) { $status.textContent = 'Fehler: ' + e.message; }
+}
+
+document.getElementById('addForm').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const el = document.getElementById('newText');
+  await act(() => call('/entries', 'POST', { text: el.value }));
+  el.value = '';
+});
+
+load();
+</script>
+</body>
+</html>
