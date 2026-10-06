@@ -32,7 +32,7 @@
         #out{flex:none;width:44px;min-height:44px;height:44px;padding:0;border:0;border-radius:50%;background:transparent;color:#fff;display:grid;place-items:center}
         #out svg{width:22px;height:22px}
 
-        main{max-width:640px;margin:0 auto;padding:1rem 1rem calc(var(--nav) + env(safe-area-inset-bottom) + 1.5rem)}
+        main{max-width:640px;margin:0 auto;padding:1rem 1rem calc(var(--nav) + env(safe-area-inset-bottom) + 5.5rem)}
         h1{margin:.3rem 0 1rem;font-size:1.65rem;line-height:1.15;font-weight:750;letter-spacing:-.02em}
         small{color:var(--sub);font-size:.875rem}
 
@@ -100,12 +100,17 @@
         #cam{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;background:#000}
         #cam video{flex:1;min-height:0;width:100%;object-fit:contain;background:#000}
         .camctl{display:flex;gap:.7rem;padding:1rem 1rem calc(1rem + env(safe-area-inset-bottom))}.camctl button{flex:1}
+        #fab{position:fixed;left:50%;bottom:calc(var(--nav) + env(safe-area-inset-bottom) + .9rem);z-index:9;transform:translateX(-50%);display:flex;align-items:center;gap:.5rem;
+            min-height:52px;padding:0 1.5rem 0 1.2rem;border:0;border-radius:999px;background:var(--ball);color:var(--on-ball);font:750 1rem var(--ui);box-shadow:0 8px 22px rgba(255,122,26,.45),0 2px 6px rgba(0,0,0,.25)}
+        #fab svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+        #fab:active:not(:disabled){transform:translateX(-50%) scale(.97)}
     </style>
 </head>
 <body>
 <header><b id="title">Vereinsverwaltung</b><select id="club" hidden></select><button id="out" hidden aria-label="Abmelden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4H5v16h5M15 8l4 4-4 4M19 12H9"/></svg></button></header>
 <main id="m"></main>
 <nav id="nav" hidden></nav>
+<button id="fab" data-tab="ho" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h12m0 0l-3-3m3 3l-3 3M17 17H5m0 0l3-3m-3 3l3 3"/></svg>Übergabe</button>
 <div id="cam" hidden><video id="camv" playsinline muted autoplay></video><div class="camctl"><button type="button" id="camx">Abbrechen</button><button type="button" id="camsnap" class="p">Aufnehmen</button></div></div>
 <script>
     const API = 'https://familieschmidt.biz/api';   // ohne Slash am Ende
@@ -246,13 +251,14 @@
     const TT = {ov:'Übersicht', ho:'Übergabe', hv:'Verlauf', pl:'Spieler', it:'Kleidung', of:'Funktionäre'};
     function render() {
         $('#out').hidden = $('#nav').hidden = !me;
+        $('#fab').hidden = !me || tab == 'ho';
         const multi = me && me.clubs.length > 1;
         $('#title').hidden = multi; $('#club').hidden = !multi;
         $('#title').textContent = me ? me.club_name : 'Vereinsverwaltung';
         if (multi) $('#club').innerHTML = me.clubs.map(c => `<option value="${c.id}" ${c.id == me.id ? 'selected' : ''}>${esc(c.club_name)}</option>`).join('');
         const h = msg ? `<div class="msg ${msg.c}">${msg.h}</div>` : ''; msg = null;
         if (!me) { $('#m').innerHTML = h + vLogin(); return; }
-        $('#nav').innerHTML = [['ov','Übersicht'],['ho','Übergabe'],['hv','Verlauf'],['pl','Spieler'],['it','Kleidung'],['of','Team']]
+        $('#nav').innerHTML = [['ov','Übersicht'],['hv','Verlauf'],['pl','Spieler'],['it','Kleidung'],['of','Funktionäre']]
             .map(([k, l]) => `<button data-tab=${k} class="${tab == k ? 'on' : ''}"><svg viewBox="0 0 24 24" aria-hidden="true">${IC[k]}</svg>${l}</button>`).join('');
         if (sel && !D.items.some(x => x.id == sel)) sel = null;
         $('#m').innerHTML = h + (sel ? vDet() : `<h1>${TT[tab]}</h1>` + {ov:vOv, ho:vHo, hv:vHv, pl:vPl, it:vIt, of:vOf}[tab]());
