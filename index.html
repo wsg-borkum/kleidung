@@ -2,34 +2,105 @@
 <html lang="de">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0f4a5c">
+    <meta name="color-scheme" content="light dark">
     <title>Vereinsverwaltung</title>
     <style>
-        :root{--c:#1a5fb4;--b:#ddd}
-        *{box-sizing:border-box}
-        body{font:16px system-ui,sans-serif;margin:0;padding-bottom:70px;background:#f6f7f9;color:#222}
-        header{background:var(--c);color:#fff;padding:.7rem 1rem;display:flex;justify-content:space-between;align-items:center}
-        main{max-width:640px;margin:0 auto;padding:1rem}
-        nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#fff;border-top:1px solid var(--b)}
-        nav button{flex:1;border:0;border-radius:0;background:none;padding:.8rem .1rem;font-size:.78rem}
-        nav button.on{color:var(--c);font-weight:700;border-top:3px solid var(--c)}
-        input,select,button{font:inherit;padding:.65rem;min-height:44px;border:1px solid #bbb;border-radius:6px;background:#fff;max-width:100%}
-        button.p{background:var(--c);color:#fff;border-color:var(--c)}
-        button.d{color:#b00020}
-        form,.card{background:#fff;border:1px solid var(--b);border-radius:8px;padding:.8rem;margin-bottom:.8rem;display:flex;flex-direction:column;gap:.5rem}
-        .row{display:flex;flex-direction:row;gap:.5rem;align-items:center}.row>*{min-width:0}.row>span{flex:1}
-        table{width:100%;border-collapse:collapse;background:#fff}th,td{padding:.5rem;border-bottom:1px solid var(--b);text-align:left}.n{text-align:right}
-        canvas{width:100%;height:auto;border:1px dashed #888;border-radius:6px;touch-action:none}
-        .msg{padding:.6rem;border-radius:6px;margin-bottom:.8rem}.err{background:#fde7ea;color:#b00020}.ok{background:#e3f6e8;color:#14632b}
-        .tabs{display:flex;gap:.3rem;margin-bottom:.8rem}.tabs button{flex:1;font-size:.85rem}.tabs .on{background:var(--c);color:#fff}
-        header select{min-height:36px;padding:.3rem;max-width:60%}
-        nav{overflow-x:auto}nav button{flex:1 0 auto;padding:.8rem .7rem}
-        .lnk{border:0;background:none;color:var(--c);padding:0;min-height:0;text-align:left;font-weight:600;text-decoration:underline}
+        :root{
+            --ink:#101c26;--sub:#586a77;--bg:#edf1f3;--surface:#fff;--line:#d9e2e7;
+            --table:#0f4a5c;--t2:#0f4a5c;--t2bg:#e0edf1;--ball:#ff7a1a;--on-ball:#101c26;
+            --ok:#1b7447;--ok-2:#e1f5ea;--bad:#b3261e;--bad-2:#fdebe9;
+            --hdr:calc(56px + env(safe-area-inset-top));--nav:64px;
+            --ui:ui-rounded,"SF Pro Rounded","Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;
+        }
+        @media (prefers-color-scheme:dark){:root{
+            --ink:#e8f0f4;--sub:#9db0bc;--bg:#0a1318;--surface:#131f27;--line:#243540;
+            --table:#0b3441;--t2:#62c4de;--t2bg:#173a47;--ok:#6fd39a;--ok-2:#143526;--bad:#ff9087;--bad-2:#3a1d1b}}
+        *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+        html{scroll-padding-top:var(--hdr)}
+        body{margin:0;min-height:100dvh;background:var(--bg);color:var(--ink);font:400 1rem/1.45 var(--ui)}
+        :focus-visible{outline:3px solid var(--ball);outline-offset:2px}
         [hidden]{display:none!important}
+
+        header{position:sticky;top:0;z-index:10;height:var(--hdr);padding:env(safe-area-inset-top) .6rem 0 1rem;display:flex;align-items:center;gap:.6rem;background:var(--table);color:#fff}
+        header b{flex:1;min-width:0;display:flex;align-items:center;gap:.55rem;font-size:1.05rem;font-weight:700;letter-spacing:-.01em;white-space:nowrap;overflow:hidden}
+        header b::before{content:"";flex:none;width:.7rem;height:.7rem;border-radius:50%;background:var(--ball)}
+        header select{flex:1;min-width:0;height:40px;padding:0 2.2rem 0 1rem;border:0;border-radius:999px;background-color:rgba(255,255,255,.15);color:#fff;font-weight:700;
+            background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")}
+        header select option{color:#101c26}
+        #out{flex:none;width:44px;min-height:44px;height:44px;padding:0;border:0;border-radius:50%;background:transparent;color:#fff;display:grid;place-items:center}
+        #out svg{width:22px;height:22px}
+
+        main{max-width:640px;margin:0 auto;padding:1rem 1rem calc(var(--nav) + env(safe-area-inset-bottom) + 1.5rem)}
+        h1{margin:.3rem 0 1rem;font-size:1.65rem;line-height:1.15;font-weight:750;letter-spacing:-.02em}
+        small{color:var(--sub);font-size:.875rem}
+
+        nav{position:fixed;inset:auto 0 0;z-index:10;display:flex;justify-content:center;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+        nav button{flex:1;max-width:120px;min-width:0;height:var(--nav);min-height:0;padding:0;border:0;border-radius:0;background:none;color:var(--sub);
+            display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font:600 .66rem var(--ui)}
+        nav svg{box-sizing:content-box;width:24px;height:24px;padding:3px 14px;border-radius:999px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+        nav button.on{color:var(--t2)}
+        nav button.on svg{background:var(--t2bg)}
+
+        input,select{display:block;width:100%;height:48px;padding:0 .95rem;border:1.5px solid var(--line);border-radius:12px;background-color:var(--surface);color:var(--ink);font:inherit}
+        input::placeholder{color:var(--sub);opacity:.8}
+        select:not(header select){appearance:none;padding-right:2.5rem;background-repeat:no-repeat;background-position:right .9rem center;background-size:18px;
+            background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23788a97' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")}
+        input:focus,select:focus{border-color:var(--t2)}
+        button{min-height:48px;padding:0 1.1rem;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);font:600 .95rem var(--ui);cursor:pointer;touch-action:manipulation}
+        button:disabled{opacity:.4}
+        button.p{border-color:var(--ball);background:var(--ball);color:var(--on-ball);font-size:1rem;font-weight:750}
+        button.d{border-color:transparent;background:var(--bad-2);color:var(--bad)}
+        button.ghost{display:inline-flex;align-items:center;gap:.2rem;min-height:40px;padding:0 .3rem 0 0;border:0;background:none;color:var(--t2)}
+        button.lnk{min-height:0;padding:0;border:0;background:none;text-align:left;font-size:1.05rem;font-weight:700}
+        button.lnk::after{content:"\203A";margin-left:.45rem;color:var(--sub);font-weight:400}
+        @media (prefers-reduced-motion:no-preference){button{transition:transform .08s}button:active:not(:disabled){transform:scale(.97)}}
+
+        .row{display:flex;flex-direction:row;flex-wrap:wrap;gap:.5rem;align-items:center}.row>*{min-width:0}.row>span{flex:1}
+        .row button{min-height:40px;padding:0 .85rem;font-size:.9rem}
+        form{display:flex;flex-direction:column;gap:.7rem;margin:0 0 1rem;padding:1rem;border-radius:16px;background:var(--surface)}
+        form.row{flex-wrap:nowrap}form.row button{min-height:48px}
+        form>b{font-size:1.05rem}
+        .panel{display:flex;flex-direction:column;gap:.7rem;margin:0 0 1rem;padding:1rem;border-radius:16px;background:var(--surface)}
+        .panel img{display:block;width:100%;border-radius:12px}
+        .nophoto{display:grid;place-items:center;height:96px;border:1.5px dashed var(--line);border-radius:12px;color:var(--sub);font-size:.9rem}
+
+        .card,.ov{display:flex;flex-direction:column;gap:.4rem;padding:.9rem 1rem;border-bottom:1px solid var(--line);background:var(--surface)}
+        :not(.card)+.card{border-radius:16px 16px 0 0}
+        .card:not(:has(+ .card)){margin-bottom:1rem;border-bottom:0;border-radius:0 0 16px 16px}
+        :not(.card)+.card:not(:has(+ .card)){border-radius:16px}
+        .card.to_player{box-shadow:inset 4px 0 0 var(--ball)}.card.to_club{box-shadow:inset 4px 0 0 var(--t2)}
+        .list{margin-bottom:1rem;border-radius:16px;overflow:hidden}.list .ov:last-child{border-bottom:0}
+        .ov{gap:.55rem}
+        .bar{display:flex;gap:2px;height:10px;border-radius:999px;overflow:hidden;background:var(--line)}
+        .bar i{display:block;min-width:0}.bar .a{background:var(--t2)}.bar .b{background:var(--ball)}
+        .nums{display:flex;flex-wrap:wrap;gap:.1rem 1rem;color:var(--sub);font-size:.9rem}
+        .nums b{color:var(--ink);font-size:1rem}
+        .nums .a::before,.nums .b::before{content:"";display:inline-block;width:.55rem;height:.55rem;margin-right:.35rem;border-radius:50%}
+        .nums .a::before{background:var(--t2)}.nums .b::before{background:var(--ball)}.nums .tot{margin-left:auto}
+        .sz{display:inline-block;margin-left:.45rem;padding:.05rem .55rem;border-radius:999px;background:var(--t2bg);color:var(--t2);font-size:.82rem;font-weight:700;vertical-align:.1em}
+        .chip{flex:none;padding:.1rem .65rem;border-radius:999px;background:var(--line);color:var(--sub);font-size:.8rem;font-style:normal;font-weight:700}
+        .chip.on{background:var(--ok-2);color:var(--ok)}
+
+        .tabs{display:flex;gap:2px;margin-bottom:1rem;padding:3px;border-radius:14px;background:var(--line)}
+        form .tabs{margin-bottom:0}
+        .tabs button{flex:1;min-height:42px;padding:0 .3rem;border:0;border-radius:11px;background:transparent;color:var(--sub);font-size:.88rem}
+        .tabs button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.2)}
+
+        #sg{display:flex;flex-direction:column;gap:.5rem}
+        .sigwrap{position:relative}
+        .sigwrap::before{content:"";position:absolute;left:1rem;right:1rem;bottom:30%;border-bottom:2px dashed #c3ccd2;pointer-events:none}
+        .sigwrap::after{content:"Hier unterschreiben";position:absolute;left:1rem;bottom:8%;color:#8896a0;font-size:.8rem;pointer-events:none}
+        canvas{display:block;width:100%;height:auto;aspect-ratio:600/220;border:1.5px solid var(--line);border-radius:12px;background:#fff;touch-action:none}
+        #ho>button.p{position:sticky;bottom:calc(var(--nav) + env(safe-area-inset-bottom) + .6rem);box-shadow:0 8px 22px rgba(255,122,26,.4)}
+
+        .msg{position:sticky;top:calc(var(--hdr) + .5rem);z-index:5;margin-bottom:1rem;padding:.8rem 1rem;border-radius:12px;font-weight:500;box-shadow:0 6px 20px rgba(0,0,0,.15)}
+        .err{background:var(--bad-2);color:var(--bad)}.ok{background:var(--ok-2);color:var(--ok)}
     </style>
 </head>
 <body>
-<header><b id="title">Vereinsverwaltung</b><select id="club" hidden></select><button id="out" hidden>Logout</button></header>
+<header><b id="title">Vereinsverwaltung</b><select id="club" hidden></select><button id="out" hidden aria-label="Abmelden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4H5v16h5M15 8l4 4-4 4M19 12H9"/></svg></button></header>
 <main id="m"></main>
 <nav id="nav" hidden></nav>
 <script>
@@ -86,32 +157,37 @@
 
     const vLogin = () => {
         const f = {
-            login: `<input name=email type=email placeholder="E-Mail" required autocomplete=username><input name=password type=password placeholder="Passwort" required autocomplete=current-password><button class=p>Einloggen</button><button type=button data-lt=forgot>Passwort vergessen?</button>`,
+            login: `<input name=email type=email placeholder="E-Mail" required autocomplete=username><input name=password type=password placeholder="Passwort" required autocomplete=current-password><button class=p>Einloggen</button><button type=button class=ghost data-lt=forgot>Passwort vergessen?</button>`,
             join: `<input name=code placeholder="Einladungscode" required autocapitalize=characters><input name=email type=email placeholder="E-Mail" required><input name=password type=password minlength=8 placeholder="Passwort (mind. 8 Zeichen)" required><small>Gleiche E-Mail wie ein bestehender Zugang? Dann bestehendes Passwort eingeben.</small><button class=p>Beitreten</button>`,
             club: `<input name=club_name placeholder="Vereinsname" required><input name=name placeholder="Dein Name" required><input name=email type=email placeholder="E-Mail" required><input name=password type=password minlength=8 placeholder="Passwort (mind. 8 Zeichen)" required><small>Gleiche E-Mail wie ein bestehender Zugang? Dann bestehendes Passwort eingeben.</small><button class=p>Verein anlegen</button>`,
             forgot: `<input name=email type=email placeholder="E-Mail" required><button class=p>Link zum Zurücksetzen senden</button>`,
             reset: `<input name=password type=password minlength=8 placeholder="Neues Passwort (mind. 8 Zeichen)" required autocomplete=new-password><button class=p>Passwort setzen</button>`}[lt];
-        return `<div class=tabs>${[['login','Einloggen'],['join','Beitreten'],['club','Neuer Verein']].map(([k, l]) => `<button data-lt=${k} class="${lt == k ? 'on' : ''}">${l}</button>`).join('')}</div><form id=auth>${f}</form>`;
+        return `<h1>${{login:'Willkommen zurück', join:'Einem Verein beitreten', club:'Neuen Verein anlegen', forgot:'Passwort zurücksetzen', reset:'Neues Passwort setzen'}[lt]}</h1><div class=tabs>${[['login','Einloggen'],['join','Beitreten'],['club','Neuer Verein']].map(([k, l]) => `<button data-lt=${k} class="${lt == k ? 'on' : ''}">${l}</button>`).join('')}</div><form id=auth>${f}</form>`;
     };
-    const vOv = () => `<table><tr><th>Kleidungsstück<th class=n>Verein<th class=n>Spieler<th class=n>Gesamt</tr>${
-        D.items.map(i => `<tr><td><button class=lnk data-item=${i.id}>${esc(i.name)} ${esc(i.size)}</button><td class=n>${i.at_club}<td class=n>${i.at_players}<td class=n>${i.total_qty}</tr>`).join('') || '<tr><td colspan=4>Noch keine Kleidungsstücke</tr>'}</table>`;
+    const vOv = () => D.items.length ? `<div class=list>${D.items.map(i => `<div class=ov><button class=lnk data-item=${i.id}>${esc(i.name)}<span class=sz>${esc(i.size)}</span></button>
+  <div class=bar><i class=a style="flex:${i.at_club}"></i><i class=b style="flex:${i.at_players}"></i></div>
+  <div class=nums><span class=a><b>${i.at_club}</b> im Verein</span><span class=b><b>${i.at_players}</b> bei Spielern</span><span class=tot>${i.total_qty} gesamt</span></div></div>`).join('')}</div>`
+        : '<div class=panel><b>Noch keine Kleidungsstücke</b><small>Lege sie im Tab „Kleidung“ an.</small></div>';
     const vHo = () => `<form id=ho>
   <div class=tabs><button type=button data-dir=to_player class="${dir == 'to_player' ? 'on' : ''}">An Spieler</button><button type=button data-dir=to_club class="${dir == 'to_club' ? 'on' : ''}">Zurück an Verein</button></div>
   <select id=hp required><option value="">Spieler wählen</option>${D.players.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('')}</select>
   <select id=hi required></select>
-  <div id=sg ${dir == 'to_club' ? 'hidden' : ''}><small>Unterschrift des Spielers</small><canvas id=cv width=600 height=220></canvas><button type=button data-act=clr>Unterschrift löschen</button></div>
+  <div id=sg ${dir == 'to_club' ? 'hidden' : ''}><b>Unterschrift des Spielers</b><div class=sigwrap><canvas id=cv width=600 height=220></canvas></div><button type=button data-act=clr>Unterschrift löschen</button></div>
   <button class=p>Übergabe speichern</button></form>`;
-    const vHv = () => `<select id=hf style="width:100%;margin-bottom:.8rem"><option value="">Alle Spieler</option>${D.players.map(p => `<option value="${p.id}" ${p.id == H.pf ? 'selected' : ''}>${esc(p.name)}</option>`).join('')}</select>` +
-        (H.rows.map(x => `<div class=card><div class=row><b style="flex:1">${x.direction == 'to_player' ? 'Ausgabe an' : 'Rückgabe von'} ${esc(x.player_name)}</b>${x.has_sig ? `<button data-act=sig data-id=${x.id}>Unterschrift</button>` : ''}</div>
-  <span>${esc(x.item_name)} ${esc(x.item_size)}</span><small>${new Date(x.created_at).toLocaleString('de-DE')} · ${esc(x.official_name)}</small><div id=s${x.id}></div></div>`).join('') || '<p>Noch keine Übergaben</p>') +
+    const vHv = () => `<select id=hf style="margin-bottom:1rem"><option value="">Alle Spieler</option>${D.players.map(p => `<option value="${p.id}" ${p.id == H.pf ? 'selected' : ''}>${esc(p.name)}</option>`).join('')}</select>` +
+        (H.rows.map(x => `<div class="card ${x.direction}"><div class=row><b style="flex:1">${x.direction == 'to_player' ? 'Ausgabe an' : 'Rückgabe von'} ${esc(x.player_name)}</b>${x.has_sig ? `<button data-act=sig data-id=${x.id}>Unterschrift</button>` : ''}</div>
+  <span>${esc(x.item_name)}<span class=sz>${esc(x.item_size)}</span></span><small>${new Date(x.created_at).toLocaleString('de-DE', {dateStyle:'medium', timeStyle:'short'})}, ${esc(x.official_name)}</small><div id=s${x.id}></div></div>`).join('')
+            || '<div class=panel><b>Noch keine Übergaben</b><small>Sie erscheinen hier, sobald du die erste speicherst.</small></div>') +
         (H.more ? '<button data-act=more style="width:100%">Mehr laden</button>' : '');
     const vDet = () => {
         const i = D.items.find(x => x.id == sel), who = D.players.filter(p => p.holdings.some(x => x.item_id == i.id));
-        return `<button data-act=back>← Zurück</button><div class=card style="margin-top:.8rem"><b style="font-size:1.1rem">${esc(i.name)} ${esc(i.size)}</b>
-  <small>Verein ${i.at_club} · bei Spielern ${i.at_players} · gesamt ${i.total_qty}</small>
-  ${i.has_photo ? (PH[i.id] ? `<img alt="Foto" src="${PH[i.id]}" style="width:100%;border-radius:6px">` : '<small>Foto wird geladen …</small>') : '<small>Kein Foto hinterlegt</small>'}
+        return `<button class=ghost data-act=back><svg width=20 height=20 viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2.4 stroke-linecap=round stroke-linejoin=round><path d="M15 6l-6 6 6 6"/></svg>Zurück</button>
+  <h1 style="margin-top:.1rem">${esc(i.name)}<span class=sz>${esc(i.size)}</span></h1>
+  <div class=panel><div class=bar><i class=a style="flex:${i.at_club}"></i><i class=b style="flex:${i.at_players}"></i></div>
+  <div class=nums><span class=a><b>${i.at_club}</b> im Verein</span><span class=b><b>${i.at_players}</b> bei Spielern</span><span class=tot>${i.total_qty} gesamt</span></div>
+  ${i.has_photo ? (PH[i.id] ? `<img alt="Foto" src="${PH[i.id]}">` : '<div class=nophoto>Foto wird geladen …</div>') : '<div class=nophoto>Kein Foto hinterlegt</div>'}
   <div class=row><input type=file id=pf accept="image/*" hidden><button data-act=photo>${i.has_photo ? 'Foto ändern' : 'Foto hinzufügen'}</button>${i.has_photo ? '<button class=d data-act=phdel>Foto entfernen</button>' : ''}</div></div>
-  <div class=card><b>Aktuell bei Spielern</b>${who.map(p => `<div class=row><span>${esc(p.name)}</span><b>${p.holdings.find(x => x.item_id == i.id).qty}×</b></div>`).join('') || '<small>Bei keinem Spieler</small>'}</div>`;
+  <div class=panel><b>Aktuell bei Spielern</b>${who.map(p => `<div class=row><span>${esc(p.name)}</span><b>${p.holdings.find(x => x.item_id == i.id).qty}×</b></div>`).join('') || '<small>Bei keinem Spieler</small>'}</div>`;
     };
     const toJpeg = file => new Promise((res, rej) => {
         const img = new Image(), u = URL.createObjectURL(file);
@@ -128,12 +204,20 @@
         D.players.map(p => `<div class=card><div class=row><b style="flex:1">${esc(p.name)}</b><button data-act=pedit data-id=${p.id}>Ändern</button><button class=d data-act=pdel data-id=${p.id}>Löschen</button></div>
   <small>${p.holdings.map(h => `${h.qty}× ${esc(h.name)} ${esc(h.size)}`).join(', ') || 'nichts ausgegeben'}</small></div>`).join('');
     const vIt = () => `<form id=ia><input name=name placeholder="Bezeichnung (z. B. Trikot)" required><div class=row><input name=size placeholder="Größe" required style="flex:1"><input name=total_qty type=number min=0 value=1 required style="width:90px"></div><button class=p>Anlegen</button></form>` +
-        D.items.map(i => `<div class=card><button class=lnk data-item=${i.id}>${esc(i.name)} ${esc(i.size)}${i.has_photo ? ' 📷' : ''}</button><small>Verein ${i.at_club} · bei Spielern ${i.at_players}</small>
+        D.items.map(i => `<div class=card><button class=lnk data-item=${i.id}>${esc(i.name)}<span class=sz>${esc(i.size)}</span>${i.has_photo ? ' 📷' : ''}</button><small>${i.at_club} im Verein, ${i.at_players} bei Spielern</small>
   <div class=row><input type=number min=${i.at_players} value=${i.total_qty} id=q${i.id} style="width:90px"><button data-act=isave data-id=${i.id}>Stückzahl speichern</button><button class=d data-act=idel data-id=${i.id} ${i.at_players ? 'disabled' : ''}>Löschen</button></div></div>`).join('');
     const vOf = () => `<form id=oa><input name=name placeholder="Name" required><input name=email type=email placeholder="E-Mail" required><button class=p>Funktionär anlegen und Code erzeugen</button></form>` +
-        D.officials.map(o => `<div class=card><div class=row><span><b>${esc(o.name)}</b><br><small>${esc(o.email)} · ${o.active ? 'aktiv' : 'eingeladen'}</small></span>${o.active ? '' : `<button data-act=ocode data-id=${o.id}>Neuer Code</button>`}${o.id == me.id ? '' : `<button class=d data-act=orem data-id=${o.id}>Entfernen</button>`}</div></div>`).join('') +
+        D.officials.map(o => `<div class=card><div class=row><span><b>${esc(o.name)}</b><br><small>${esc(o.email)}</small></span><i class="chip ${o.active ? 'on' : ''}">${o.active ? 'aktiv' : 'eingeladen'}</i>${o.active ? '' : `<button data-act=ocode data-id=${o.id}>Neuer Code</button>`}${o.id == me.id ? '' : `<button class=d data-act=orem data-id=${o.id}>Entfernen</button>`}</div></div>`).join('') +
         `<form id=pw><b>Mein Passwort ändern</b><input name=old_password type=password placeholder="Aktuelles Passwort" required autocomplete=current-password><input name=password type=password minlength=8 placeholder="Neues Passwort (mind. 8 Zeichen)" required autocomplete=new-password><button class=p>Passwort ändern</button></form>`;
 
+    const IC = {
+        ov:'<path d="M4 7l8-4 8 4v10l-8 4-8-4z"/><path d="M4 7l8 4 8-4M12 11v10"/>',
+        ho:'<path d="M7 7h12m0 0l-3-3m3 3l-3 3M17 17H5m0 0l3-3m-3 3l3 3"/>',
+        hv:'<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>',
+        pl:'<circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/>',
+        it:'<path d="M8 4L3 7l2 4 3-1v10h8V10l3 1 2-4-5-3c-.5 1.5-1.7 2.2-3 2.2S8.5 5.5 8 4z"/>',
+        of:'<circle cx="9" cy="9" r="3"/><path d="M3 20c0-3 2.7-5 6-5s6 2 6 5M16 6a3 3 0 010 6M18 15c2 .5 3 2.3 3 5"/>'};
+    const TT = {ov:'Übersicht', ho:'Übergabe', hv:'Verlauf', pl:'Spieler', it:'Kleidung', of:'Funktionäre'};
     function render() {
         $('#out').hidden = $('#nav').hidden = !me;
         const multi = me && me.clubs.length > 1;
@@ -142,10 +226,10 @@
         if (multi) $('#club').innerHTML = me.clubs.map(c => `<option value="${c.id}" ${c.id == me.id ? 'selected' : ''}>${esc(c.club_name)}</option>`).join('');
         const h = msg ? `<div class="msg ${msg.c}">${msg.h}</div>` : ''; msg = null;
         if (!me) { $('#m').innerHTML = h + vLogin(); return; }
-        $('#nav').innerHTML = [['ov','Übersicht'],['ho','Übergabe'],['hv','Verlauf'],['pl','Spieler'],['it','Kleidung'],['of','Funktionäre']]
-            .map(([k, l]) => `<button data-tab=${k} class="${tab == k ? 'on' : ''}">${l}</button>`).join('');
+        $('#nav').innerHTML = [['ov','Übersicht'],['ho','Übergabe'],['hv','Verlauf'],['pl','Spieler'],['it','Kleidung'],['of','Team']]
+            .map(([k, l]) => `<button data-tab=${k} class="${tab == k ? 'on' : ''}"><svg viewBox="0 0 24 24" aria-hidden="true">${IC[k]}</svg>${l}</button>`).join('');
         if (sel && !D.items.some(x => x.id == sel)) sel = null;
-        $('#m').innerHTML = h + (sel ? vDet() : {ov:vOv, ho:vHo, hv:vHv, pl:vPl, it:vIt, of:vOf}[tab]());
+        $('#m').innerHTML = h + (sel ? vDet() : `<h1>${TT[tab]}</h1>` + {ov:vOv, ho:vHo, hv:vHv, pl:vPl, it:vIt, of:vOf}[tab]());
         if (tab == 'ho') { pad($('#cv')); fillItems(); }
     }
 
@@ -172,13 +256,13 @@
     document.addEventListener('click', e => {
         const b = e.target.closest('button'); if (!b) return; const a = b.dataset;
         if (a.lt) { lt = a.lt; render(); }
-        else if (a.tab) { tab = a.tab; sel = null; if (tab == 'hv') go(async () => { await hist(); render(); }); else render(); }
+        else if (a.tab) { tab = a.tab; sel = null; window.scrollTo(0, 0); if (tab == 'hv') go(async () => { await hist(); render(); }); else render(); }
         else if (a.dir) { dir = a.dir; document.querySelectorAll('[data-dir]').forEach(x => x.classList.toggle('on', x.dataset.dir == dir)); $('#sg').hidden = dir == 'to_club'; fillItems(); }
         else if (b.id == 'out') { api('/logout', 'POST').catch(() => {}); store.removeItem('tok'); me = null; render(); }
         else if (a.act == 'clr') $('#cv').clear();
         else if (a.act == 'back') { sel = null; render(); }
         else if (a.act == 'photo') $('#pf').click();
-        else if (a.item) { sel = +a.item; render(); const i = D.items.find(x => x.id == sel);
+        else if (a.item) { sel = +a.item; window.scrollTo(0, 0); render(); const i = D.items.find(x => x.id == sel);
             if (i && i.has_photo && !PH[sel]) go(async () => { const id = sel, r = await api(`/items/${id}/photo`); PH[id] = r.photo; if (sel == id) render(); }); }
         else if (a.act) go(async () => {
             if (a.act == 'more') { await hist(true); render(); return; }
