@@ -104,6 +104,9 @@
             min-height:52px;padding:0 1.5rem 0 1.2rem;border:0;border-radius:999px;background:var(--ball);color:var(--on-ball);font:750 1rem var(--ui);box-shadow:0 8px 22px rgba(255,122,26,.45),0 2px 6px rgba(0,0,0,.25)}
         #fab svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
         #fab:active:not(:disabled){transform:translateX(-50%) scale(.97)}
+        #fab{transition:transform .2s ease,opacity .2s ease}
+        #fab.away{transform:translateX(-50%) translateY(calc(100% + var(--nav) + 2rem));opacity:0;pointer-events:none}
+        @media (prefers-reduced-motion:reduce){#fab{transition:none}}
     </style>
 </head>
 <body>
@@ -313,6 +316,11 @@
             await load(); render();
         });
     });
+    let lastY = 0;   // Übergabe-Button: beim Runterscrollen ausblenden, beim Hochscrollen wieder zeigen
+    addEventListener('scroll', () => {
+        const y = scrollY; if (Math.abs(y - lastY) < 8) return;
+        $('#fab').classList.toggle('away', y > lastY && y > 80); lastY = y;
+    }, {passive: true});
     (async () => { if (store.getItem('tok') && !RESET) { try { await loadMe(); await load(); } catch (e) {} } render(); })();
 </script>
 </body>
