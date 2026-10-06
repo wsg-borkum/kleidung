@@ -186,7 +186,7 @@
   <div class=panel><div class=bar><i class=a style="flex:${i.at_club}"></i><i class=b style="flex:${i.at_players}"></i></div>
   <div class=nums><span class=a><b>${i.at_club}</b> im Verein</span><span class=b><b>${i.at_players}</b> bei Spielern</span><span class=tot>${i.total_qty} gesamt</span></div>
   ${i.has_photo ? (PH[i.id] ? `<img alt="Foto" src="${PH[i.id]}">` : '<div class=nophoto>Foto wird geladen …</div>') : '<div class=nophoto>Kein Foto hinterlegt</div>'}
-  <div class=row><input type=file id=pf accept="image/*" hidden><button data-act=photo>${i.has_photo ? 'Foto ändern' : 'Foto hinzufügen'}</button>${i.has_photo ? '<button class=d data-act=phdel>Foto entfernen</button>' : ''}</div></div>
+  <div class=row><input type=file id=pf accept="image/*" hidden><input type=file id=pc accept="image/*" capture=environment hidden><button class=p data-act=cam>${i.has_photo ? 'Neues Foto aufnehmen' : 'Foto aufnehmen'}</button><button data-act=photo>Aus Galerie wählen</button>${i.has_photo ? '<button class=d data-act=phdel>Foto entfernen</button>' : ''}</div></div>
   <div class=panel><b>Aktuell bei Spielern</b>${who.map(p => `<div class=row><span>${esc(p.name)}</span><b>${p.holdings.find(x => x.item_id == i.id).qty}×</b></div>`).join('') || '<small>Bei keinem Spieler</small>'}</div>`;
     };
     const toJpeg = file => new Promise((res, rej) => {
@@ -236,7 +236,7 @@
     document.addEventListener('change', e => {
         if (e.target.id == 'hp') fillItems();
         else if (e.target.id == 'club') go(async () => { store.setItem('club', e.target.value); await loadMe(); await load(); H = {rows:[], more:false, pf:''}; sel = null; if (tab == 'hv') await hist(); render(); });
-        else if (e.target.id == 'pf') go(async () => { const f = e.target.files[0]; if (!f) return; const d = await toJpeg(f); await api(`/items/${sel}/photo`, 'PUT', {photo: d}); PH[sel] = d; await load(); render(); });
+        else if (e.target.id == 'pf' || e.target.id == 'pc') go(async () => { const f = e.target.files[0]; e.target.value = ''; if (!f) return; const d = await toJpeg(f); await api(`/items/${sel}/photo`, 'PUT', {photo: d}); PH[sel] = d; await load(); render(); });
         else if (e.target.id == 'hf') go(async () => { H.pf = e.target.value; await hist(); render(); });
     });
     document.addEventListener('submit', e => { e.preventDefault(); const f = e.target, d = Object.fromEntries(new FormData(f)); go(async () => {
@@ -262,6 +262,7 @@
         else if (a.act == 'clr') $('#cv').clear();
         else if (a.act == 'back') { sel = null; render(); }
         else if (a.act == 'photo') $('#pf').click();
+        else if (a.act == 'cam') $('#pc').click();
         else if (a.item) { sel = +a.item; window.scrollTo(0, 0); render(); const i = D.items.find(x => x.id == sel);
             if (i && i.has_photo && !PH[sel]) go(async () => { const id = sel, r = await api(`/items/${id}/photo`); PH[id] = r.photo; if (sel == id) render(); }); }
         else if (a.act) go(async () => {
