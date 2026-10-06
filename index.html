@@ -218,7 +218,14 @@
     async function openCam() {   // Live-Kamera im Browser; ohne Kamera-API bleibt die System-Kamera als Ausweg
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { $('#pc').click(); return; }
         try { camStream = await navigator.mediaDevices.getUserMedia({video: {facingMode: {ideal: 'environment'}, width: {ideal: 1280}}, audio: false}); }
-        catch (e) { throw new Error(e.name == 'NotAllowedError' ? 'Kamerazugriff nicht erlaubt. Bitte in den Browser-Einstellungen die Kamera für diese Seite freigeben.' : 'Kamera nicht verfügbar. Bitte „Aus Galerie wählen“ nutzen.'); }
+        catch (e) {
+            const m = String(e.message || '');
+            throw new Error((e.name == 'NotAllowedError'
+                ? (/system/i.test(m) ? 'Android verweigert Chrome die Kamera. Öffne Einstellungen, Apps, Chrome, Berechtigungen, Kamera und wähle „Nur bei Nutzung der App zulassen“.'
+                    : /dismiss/i.test(m) ? 'Die Kamera-Anfrage wurde geschlossen. Tippe erneut und wähle „Zulassen“.'
+                        : 'Die Kamera ist für diese Seite blockiert. Tippe in der Adressleiste auf das Symbol links, dann Berechtigungen, Kamera zurücksetzen.')
+                : 'Kamera nicht verfügbar. Bitte „Aus Galerie wählen“ nutzen.') + ` (${e.name}: ${m})`);
+        }
         const v = $('#camv'); v.srcObject = camStream; $('#cam').hidden = false; await v.play();
     }
     function closeCam() { if (camStream) camStream.getTracks().forEach(t => t.stop()); camStream = null; $('#camv').srcObject = null; $('#cam').hidden = true; }
