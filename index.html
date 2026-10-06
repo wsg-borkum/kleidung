@@ -97,12 +97,16 @@
 
         .msg{position:sticky;top:calc(var(--hdr) + .5rem);z-index:5;margin-bottom:1rem;padding:.8rem 1rem;border-radius:12px;font-weight:500;box-shadow:0 6px 20px rgba(0,0,0,.15)}
         .err{background:var(--bad-2);color:var(--bad)}.ok{background:var(--ok-2);color:var(--ok)}
+        #cam{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;background:#000}
+        #cam video{flex:1;min-height:0;width:100%;object-fit:contain;background:#000}
+        .camctl{display:flex;gap:.7rem;padding:1rem 1rem calc(1rem + env(safe-area-inset-bottom))}.camctl button{flex:1}
     </style>
 </head>
 <body>
 <header><b id="title">Vereinsverwaltung</b><select id="club" hidden></select><button id="out" hidden aria-label="Abmelden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4H5v16h5M15 8l4 4-4 4M19 12H9"/></svg></button></header>
 <main id="m"></main>
 <nav id="nav" hidden></nav>
+<div id="cam" hidden><video id="camv" playsinline muted autoplay></video><div class="camctl"><button type="button" id="camx">Abbrechen</button><button type="button" id="camsnap" class="p">Aufnehmen</button></div></div>
 <script>
     const API = 'https://familieschmidt.biz/api';   // ohne Slash am Ende
     const store = localStorage;                        // sessionStorage: Login endet mit dem Tab
@@ -210,6 +214,21 @@
         D.officials.map(o => `<div class=card><div class=row><span><b>${esc(o.name)}</b><br><small>${esc(o.email)}</small></span><i class="chip ${o.active ? 'on' : ''}">${o.active ? 'aktiv' : 'eingeladen'}</i>${o.active ? '' : `<button data-act=ocode data-id=${o.id}>Neuer Code</button>`}${o.id == me.id ? '' : `<button class=d data-act=orem data-id=${o.id}>Entfernen</button>`}</div></div>`).join('') +
         `<form id=pw><b>Mein Passwort ändern</b><input name=old_password type=password placeholder="Aktuelles Passwort" required autocomplete=current-password><input name=password type=password minlength=8 placeholder="Neues Passwort (mind. 8 Zeichen)" required autocomplete=new-password><button class=p>Passwort ändern</button></form>`;
 
+    let camStream = null;
+    async function openCam() {   // Live-Kamera im Browser; ohne Kamera-API bleibt die System-Kamera als Ausweg
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { $('#pc').click(); return; }
+        try { camStream = await navigator.mediaDevices.getUserMedia({video: {facingMode: {ideal: 'environment'}, width: {ideal: 1280}}, audio: false}); }
+        catch (e) { throw new Error(e.name == 'NotAllowedError' ? 'Kamerazugriff nicht erlaubt. Bitte in den Browser-Einstellungen die Kamera für diese Seite freigeben.' : 'Kamera nicht verfügbar. Bitte „Aus Galerie wählen“ nutzen.'); }
+        const v = $('#camv'); v.srcObject = camStream; $('#cam').hidden = false; await v.play();
+    }
+    function closeCam() { if (camStream) camStream.getTracks().forEach(t => t.stop()); camStream = null; $('#camv').srcObject = null; $('#cam').hidden = true; }
+    async function snap() {
+        const v = $('#camv'), k = Math.min(1, 800 / Math.max(v.videoWidth, v.videoHeight)), c = document.createElement('canvas');
+        c.width = Math.round(v.videoWidth * k); c.height = Math.round(v.videoHeight * k);
+        c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+        const d = c.toDataURL('image/jpeg', 0.8); closeCam();
+        await api(`/items/${sel}/photo`, 'PUT', {photo: d}); PH[sel] = d; await load(); render();
+    }
     const IC = {
         ov:'<path d="M4 7l8-4 8 4v10l-8 4-8-4z"/><path d="M4 7l8 4 8-4M12 11v10"/>',
         ho:'<path d="M7 7h12m0 0l-3-3m3 3l-3 3M17 17H5m0 0l3-3m-3 3l3 3"/>',
@@ -262,7 +281,9 @@
         else if (a.act == 'clr') $('#cv').clear();
         else if (a.act == 'back') { sel = null; render(); }
         else if (a.act == 'photo') $('#pf').click();
-        else if (a.act == 'cam') $('#pc').click();
+        else if (a.act == 'cam') go(openCam);
+        else if (b.id == 'camx') closeCam();
+        else if (b.id == 'camsnap') go(snap);
         else if (a.item) { sel = +a.item; window.scrollTo(0, 0); render(); const i = D.items.find(x => x.id == sel);
             if (i && i.has_photo && !PH[sel]) go(async () => { const id = sel, r = await api(`/items/${id}/photo`); PH[id] = r.photo; if (sel == id) render(); }); }
         else if (a.act) go(async () => {
