@@ -682,6 +682,13 @@
                 transition: none
             }
         }
+
+        h2 {
+            margin: 1.4rem 0 .7rem;
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: -.01em
+        }
     </style>
 </head>
 <body>
@@ -729,6 +736,9 @@
         no_club: 'Kein Verein zugeordnet',
         invalid_token: 'Link ungültig oder abgelaufen',
         invalid_photo: 'Foto ungültig',
+        forbidden: 'Dafür fehlt dir die Berechtigung',
+        invalid_role: 'Rolle ungültig',
+        last_admin: 'Es muss mindestens ein aktiver Admin bleiben',
         cannot_remove_self: 'Du kannst dich nicht selbst entfernen'
     };
     const $ = s => document.querySelector(s);
@@ -740,7 +750,7 @@
         "'": '&#39;'
     }[c]));
     let me = null, tab = 'ov', lt = 'login', dir = 'to_player', msg = null, D = {items: [], players: [], officials: []};
-    let H = {rows: [], more: false, pf: ''}, sel = null, PH = {};
+    let H = {rows: [], more: false, pf: ''}, sel = null, PH = {}, CL = {}, AU = [];
     let RESET = (location.hash.match(/^#reset=([0-9a-f]{64})$/) || [])[1] || null;
     if (RESET) lt = 'reset';
     const flash = (t, c = 'ok') => msg = {h: esc(t), c};
@@ -765,7 +775,10 @@
         return d;
     }
 
-    const load = async () => [D.items, D.players, D.officials] = await Promise.all([api('/items'), api('/players'), api('/officials')]);
+    const load = async () => {
+        [D.items, D.players, D.officials, CL] = await Promise.all([api('/items'), api('/players'), api('/officials'), api('/club')]);
+        AU = me.role == 'admin' ? await api('/audit') : [];
+    };
     const loadMe = async () => {
         me = await api('/me');
         store.setItem('club', me.id);
@@ -895,9 +908,34 @@
     const vIt = () => `<form id=ia><input name=name placeholder="Bezeichnung (z. B. Trikot)" required><div class=row><input name=size placeholder="Größe" required style="flex:1"><input name=total_qty type=number min=0 value=1 required style="width:90px"></div><button class=p>Anlegen</button></form>` +
         D.items.map(i => `<div class=card><button class=lnk data-item=${i.id}>${esc(i.name)}<span class=sz>${esc(i.size)}</span>${i.has_photo ? ' 📷' : ''}</button><small>${i.at_club} im Verein, ${i.at_players} bei Spielern</small>
   <div class=row><input type=number min=${i.at_players} value=${i.total_qty} id=q${i.id} style="width:90px"><button data-act=isave data-id=${i.id}>Stückzahl speichern</button><button class=d data-act=idel data-id=${i.id} ${i.at_players ? 'disabled' : ''}>Löschen</button></div></div>`).join('');
-    const vOf = () => `<form id=oa><input name=name placeholder="Name" required><input name=email type=email placeholder="E-Mail" required><button class=p>Funktionär anlegen und Code erzeugen</button></form>` +
-        D.officials.map(o => `<div class=card><div class=row><span><b>${esc(o.name)}</b><br><small>${esc(o.email)}</small></span><i class="chip ${o.active ? 'on' : ''}">${o.active ? 'aktiv' : 'eingeladen'}</i>${o.active ? '' : `<button data-act=ocode data-id=${o.id}>Neuer Code</button>`}${o.id == me.id ? '' : `<button class=d data-act=orem data-id=${o.id}>Entfernen</button>`}</div></div>`).join('') +
-        `<form id=pw><b>Mein Passwort ändern</b><input name=old_password type=password placeholder="Aktuelles Passwort" required autocomplete=current-password><input name=password type=password minlength=8 placeholder="Neues Passwort (mind. 8 Zeichen)" required autocomplete=new-password><button class=p>Passwort ändern</button></form>`;
+    const ROLE = {admin: 'Admin', member: 'Funktionär'};
+    const ACT = {
+        club_created: 'Verein angelegt',
+        club_updated: 'Vereinsdaten geändert',
+        official_invited: 'Funktionär eingeladen',
+        official_removed: 'Funktionär entfernt',
+        role_changed: 'Rolle geändert'
+    };
+    const PLAN = {trial: 'Testphase', active: 'Aktiv', past_due: 'Zahlung offen', cancelled: 'Gekündigt'};
+    const fld = (n, ph, v, t = 'text', req = '') => `<input name=${n} type=${t} placeholder="${ph}" aria-label="${ph}" value="${esc(v ?? '')}" ${req}>`;
+    const vOf = () => {
+        const adm = me.role == 'admin';
+        return (adm ? `<form id=cl><b>Vereinsdaten</b>${fld('name', 'Vereinsname', CL.name, 'text', 'required')}${fld('contact_name', 'Ansprechperson', CL.contact_name)}${fld('street', 'Straße und Hausnummer', CL.street)}
+    <div class=row><input name=zip placeholder="PLZ" aria-label="PLZ" value="${esc(CL.zip ?? '')}" style="width:100px"><input name=city placeholder="Ort" aria-label="Ort" value="${esc(CL.city ?? '')}" style="flex:1"></div>
+    ${fld('country', 'Land', CL.country)}${fld('billing_email', 'Rechnungs-E-Mail', CL.billing_email, 'email')}${fld('vat_id', 'USt-ID (optional)', CL.vat_id)}${fld('register_no', 'Vereinsregisternummer (optional)', CL.register_no)}
+    <button class=p>Speichern</button></form>
+    <div class=panel><b>Tarif</b><div class=row><i class="chip on">${PLAN[CL.status] || esc(CL.status)}</i><small>${CL.status == 'trial' ? 'bis ' + new Date(CL.trial_ends_at).toLocaleDateString('de-DE') : ''}</small></div></div>`
+                : `<div class=panel><b>${esc(CL.name || '')}</b></div>`)
+            + '<h2>Funktionäre</h2>'
+            + (adm ? `<form id=oa><input name=name placeholder="Name" required><input name=email type=email placeholder="E-Mail" required><button class=p>Funktionär einladen und Code erzeugen</button></form>` : '')
+            + D.officials.map(o => `<div class=card><div class=row><span><b>${esc(o.name)}</b>${o.email ? `<br><small>${esc(o.email)}</small>` : ''}</span><i class="chip ${o.role == 'admin' ? 'on' : ''}">${ROLE[o.role]}</i>${o.active ? '' : '<i class=chip>eingeladen</i>'}</div>
+    ${adm ? `<div class=row><button data-act=orole data-id=${o.id} data-role=${o.role == 'admin' ? 'member' : 'admin'}>${o.role == 'admin' ? (o.id == me.id ? 'Meine Admin-Rolle abgeben' : 'Admin entziehen') : 'Zum Admin machen'}</button>${o.active ? '' : `<button data-act=ocode data-id=${o.id}>Neuer Code</button>`}${o.id == me.id ? '' : `<button class=d data-act=orem data-id=${o.id}>Entfernen</button>`}</div>` : ''}</div>`).join('')
+            + (adm ? '<h2>Protokoll</h2>' + (AU.map(x => `<div class=card><b>${ACT[x.action] || esc(x.action)}</b>${x.detail ? `<span>${esc(x.detail)}</span>` : ''}<small>${new Date(x.created_at).toLocaleString('de-DE', {
+                dateStyle: 'medium',
+                timeStyle: 'short'
+            })}, ${esc(x.official_name)}</small></div>`).join('') || '<div class=panel><small>Noch keine Einträge</small></div>') : '')
+            + `<h2>Mein Konto</h2><form id=pw><b>Passwort ändern</b><input name=old_password type=password placeholder="Aktuelles Passwort" required autocomplete=current-password><input name=password type=password minlength=8 placeholder="Neues Passwort (mind. 8 Zeichen)" required autocomplete=new-password><button class=p>Passwort ändern</button></form>`;
+    };
 
     let camStream = null;
 
@@ -954,9 +992,9 @@
         hv: '<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>',
         pl: '<circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/>',
         it: '<path d="M8 4L3 7l2 4 3-1v10h8V10l3 1 2-4-5-3c-.5 1.5-1.7 2.2-3 2.2S8.5 5.5 8 4z"/>',
-        of: '<circle cx="9" cy="9" r="3"/><path d="M3 20c0-3 2.7-5 6-5s6 2 6 5M16 6a3 3 0 010 6M18 15c2 .5 3 2.3 3 5"/>'
+        of: '<path d="M4 21V10l8-6 8 6v11M9 21v-6h6v6"/>'
     };
-    const TT = {ov: 'Übersicht', ho: 'Übergabe', hv: 'Verlauf', pl: 'Spieler', it: 'Kleidung', of: 'Funktionäre'};
+    const TT = {ov: 'Übersicht', ho: 'Übergabe', hv: 'Verlauf', pl: 'Spieler', it: 'Kleidung', of: 'Verein'};
 
     function render() {
         $('#out').hidden = $('#nav').hidden = !me;
@@ -972,7 +1010,7 @@
             $('#m').innerHTML = h + vLogin();
             return;
         }
-        $('#nav').innerHTML = [['ov', 'Übersicht'], ['hv', 'Verlauf'], ['pl', 'Spieler'], ['it', 'Kleidung'], ['of', 'Funktionäre']]
+        $('#nav').innerHTML = [['ov', 'Übersicht'], ['hv', 'Verlauf'], ['pl', 'Spieler'], ['it', 'Kleidung'], ['of', 'Verein']]
             .map(([k, l]) => `<button data-tab=${k} class="${tab == k ? 'on' : ''}"><svg viewBox="0 0 24 24" aria-hidden="true">${IC[k]}</svg>${l}</button>`).join('');
         if (sel && !D.items.some(x => x.id == sel)) sel = null;
         $('#m').innerHTML = h + (sel ? vDet() : `<h1>${TT[tab]}</h1>` + {
@@ -1052,6 +1090,11 @@
                 const r = await api('/officials', 'POST', d);
                 await load();
                 showCode(d.name, r.code);
+            } else if (f.id == 'cl') {
+                await api('/club', 'PUT', d);
+                await loadMe();
+                await load();
+                flash('Vereinsdaten gespeichert');
             } else if (f.id == 'pw') {
                 await api('/password', 'POST', d);
                 flash('Passwort geändert, andere Geräte wurden abgemeldet');
@@ -1135,6 +1178,11 @@
                 await api(`/items/${sel}/photo`, 'DELETE');
                 delete PH[sel];
                 flash('Foto entfernt');
+            }
+            if (a.act == 'orole') {
+                await api(`/officials/${a.id}/role`, 'PUT', {role: a.role});
+                await loadMe();
+                flash('Rolle geändert');
             }
             if (a.act == 'orem') {
                 if (!confirm('Funktionär wirklich entfernen?')) return;
