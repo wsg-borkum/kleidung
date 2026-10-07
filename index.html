@@ -758,6 +758,11 @@
         no_club: 'Kein Verein zugeordnet',
         invalid_token: 'Link ungültig oder abgelaufen',
         invalid_photo: 'Foto ungültig',
+        quota_players: 'Das Limit für Spieler ist erreicht',
+        quota_items: 'Das Limit für Kleidungsstücke ist erreicht',
+        quota_officials: 'Das Limit für Funktionäre ist erreicht',
+        quota_clubs: 'Du kannst höchstens 5 Vereine anlegen oder ihnen beitreten',
+        invalid_code: 'Code ungültig, abgelaufen oder nicht für deine E-Mail-Adresse',
         refund_too_high: 'Rückzahlung höher als der Pfand',
         note_required: 'Bitte eine Notiz zum einbehaltenen Betrag angeben',
         invalid_deposit_cents: 'Pfandbetrag ungültig',
@@ -779,6 +784,8 @@
     let H = {rows: [], more: false, pf: ''}, sel = null, PH = {}, CL = {}, AU = [];
     let RESET = (location.hash.match(/^#reset=([0-9a-f]{64})$/) || [])[1] || null;
     if (RESET) lt = 'reset';
+    let VERIFY = (location.hash.match(/^#verify=([0-9a-f]{64})$/) || [])[1] || null;
+    if (VERIFY) lt = 'verify';
     const flash = (t, c = 'ok') => msg = {h: esc(t), c};
 
     async function api(p, m = 'GET', b) {
@@ -802,12 +809,13 @@
     }
 
     const load = async () => {
+        if (!me.clubs.length) return;
         [D.items, D.players, D.officials, CL] = await Promise.all([api('/items'), api('/players'), api('/officials'), api('/club')]);
         AU = me.role == 'admin' ? await api('/audit') : [];
     };
     const loadMe = async () => {
         me = await api('/me');
-        store.setItem('club', me.id);
+        if (me.id) store.setItem('club', me.id);
     };
 
     async function hist(more) {
@@ -914,19 +922,22 @@
     const vLogin = () => {
         const f = {
             login: `<input name=email type=email placeholder="E-Mail" required autocomplete=username><input name=password type=password placeholder="Passwort" required autocomplete=current-password><button class=p>Einloggen</button><button type=button class=ghost data-lt=forgot>Passwort vergessen?</button>`,
-            join: `<input name=code placeholder="Einladungscode" required autocapitalize=characters><input name=email type=email placeholder="E-Mail" required><input name=password type=password minlength=8 placeholder="Passwort (mind. 8 Zeichen)" required><small>Gleiche E-Mail wie ein bestehender Zugang? Dann bestehendes Passwort eingeben.</small><button class=p>Beitreten</button>`,
-            club: `<input name=club_name placeholder="Vereinsname" required><input name=name placeholder="Dein Name" required><input name=email type=email placeholder="E-Mail" required><input name=password type=password minlength=8 placeholder="Passwort (mind. 8 Zeichen)" required><small>Gleiche E-Mail wie ein bestehender Zugang? Dann bestehendes Passwort eingeben.</small><button class=p>Verein anlegen</button>`,
+            reg: `<input name=email type=email placeholder="E-Mail" required autocomplete=email><small>Wir schicken dir einen Link. Mit ihm bestätigst du die Adresse und wählst dein Passwort.</small><button class=p>Link senden</button>`,
             forgot: `<input name=email type=email placeholder="E-Mail" required><button class=p>Link zum Zurücksetzen senden</button>`,
-            reset: `<input name=password type=password minlength=8 placeholder="Neues Passwort (mind. 8 Zeichen)" required autocomplete=new-password><button class=p>Passwort setzen</button>`
+            reset: `<input name=password type=password minlength=8 placeholder="Neues Passwort (mind. 8 Zeichen)" required autocomplete=new-password><button class=p>Passwort setzen</button>`,
+            verify: `<input name=password type=password minlength=8 placeholder="Passwort wählen (mind. 8 Zeichen)" required autocomplete=new-password><button class=p>Zugang aktivieren</button>`
         }[lt];
         return `<h1>${{
             login: 'Willkommen zurück',
-            join: 'Einem Verein beitreten',
-            club: 'Neuen Verein anlegen',
+            reg: 'Zugang anlegen',
             forgot: 'Passwort zurücksetzen',
-            reset: 'Neues Passwort setzen'
-        }[lt]}</h1><div class=tabs>${[['login', 'Einloggen'], ['join', 'Beitreten'], ['club', 'Neuer Verein']].map(([k, l]) => `<button data-lt=${k} class="${lt == k ? 'on' : ''}">${l}</button>`).join('')}</div><form id=auth>${f}</form>`;
+            reset: 'Neues Passwort setzen',
+            verify: 'Passwort wählen'
+        }[lt]}</h1><div class=tabs>${[['login', 'Einloggen'], ['reg', 'Registrieren']].map(([k, l]) => `<button data-lt=${k} class="${lt == k ? 'on' : ''}">${l}</button>`).join('')}</div><form id=auth>${f}</form>`;
     };
+    const vNewClub = () => `<form id=nc><b>Neuen Verein anlegen</b><input name=club_name placeholder="Vereinsname" required><input name=name placeholder="Dein Name" required><button class=p>Verein anlegen</button></form>
+  <form id=jn><b>Mit Einladungscode beitreten</b><input name=code placeholder="Einladungscode" required autocapitalize=characters><small>Der Code gilt nur für die E-Mail-Adresse, an die die Einladung gerichtet war.</small><button class=p>Beitreten</button></form>`;
+    const vOnb = () => `<h1>Willkommen</h1><p>Lege deinen Verein an oder tritt einem bestehenden bei.</p>` + vNewClub();
     const vOvList = () => D.items.length ? `<div class=list>${D.items.map(i => `<div class=ov><button class=lnk data-item=${i.id}>${esc(i.name)}<span class=sz>${esc(i.size)}</span></button>
   <div class=bar><i class=a style="flex:${i.at_club}"></i><i class=b style="flex:${i.at_players}"></i></div>
   <div class=nums><span class=a><b>${i.at_club}</b> im Verein</span><span class=b><b>${i.at_players}</b> bei Spielern</span><span class=tot>${i.total_qty} gesamt</span></div></div>`).join('')}</div>`
@@ -1006,6 +1017,7 @@
                 dateStyle: 'medium',
                 timeStyle: 'short'
             })}, ${esc(x.official_name)}</small></div>`).join('') || '<div class=panel><small>Noch keine Einträge</small></div>') : '')
+            + '<h2>Weiteren Verein</h2>' + vNewClub()
             + `<h2>Mein Konto</h2><form id=pw><b>Passwort ändern</b><input name=old_password type=password placeholder="Aktuelles Passwort" required autocomplete=current-password><input name=password type=password minlength=8 placeholder="Neues Passwort (mind. 8 Zeichen)" required autocomplete=new-password><button class=p>Passwort ändern</button></form>`;
     };
 
@@ -1074,12 +1086,17 @@
         const multi = me && me.clubs.length > 1;
         $('#title').hidden = multi;
         $('#club').hidden = !multi;
-        $('#title').textContent = me ? me.club_name : 'Vereinsverwaltung';
+        $('#title').textContent = me ? (me.club_name || 'Vereinsverwaltung') : 'Vereinsverwaltung';
         if (multi) $('#club').innerHTML = me.clubs.map(c => `<option value="${c.id}" ${c.id == me.id ? 'selected' : ''}>${esc(c.club_name)}</option>`).join('');
         const h = msg ? `<div class="msg ${msg.c}">${msg.h}</div>` : '';
         msg = null;
         if (!me) {
             $('#m').innerHTML = h + vLogin();
+            return;
+        }
+        if (!me.clubs.length) {
+            $('#nav').hidden = $('#fab').hidden = true;
+            $('#m').innerHTML = h + vOnb();
             return;
         }
         $('#nav').innerHTML = [['ov', 'Übersicht'], ['hv', 'Verlauf'], ['pl', 'Spieler'], ['it', 'Kleidung'], ['of', 'Verein']]
@@ -1145,8 +1162,20 @@
                 history.replaceState(null, '', location.pathname);
                 lt = 'login';
                 flash('Passwort geändert, bitte einloggen.');
+            } else if (f.id == 'auth' && lt == 'reg') {
+                await api('/register', 'POST', d);
+                flash('Wir haben dir eine E-Mail geschickt. Prüfe auch den Spam-Ordner.');
+            } else if (f.id == 'auth' && lt == 'verify') {
+                const r = await api('/verify', 'POST', {token: VERIFY, password: d.password});
+                store.setItem('tok', r.token);
+                VERIFY = null;
+                history.replaceState(null, '', location.pathname);
+                lt = 'login';
+                await loadMe();
+                await load();
+                tab = 'ov';
             } else if (f.id == 'auth') {
-                const r = await api({login: '/login', join: '/join', club: '/clubs'}[lt], 'POST', d);
+                const r = await api('/login', 'POST', d);
                 store.setItem('tok', r.token);
                 if (r.official_id) store.setItem('club', r.official_id);
                 await loadMe();
@@ -1167,6 +1196,15 @@
                 const r = await api('/officials', 'POST', d);
                 await load();
                 showCode(d.name, r.code);
+            } else if (f.id == 'nc' || f.id == 'jn') {
+                const r = await api(f.id == 'nc' ? '/clubs' : '/join', 'POST', d);
+                store.setItem('club', r.official_id);
+                await loadMe();
+                await load();
+                H = {rows: [], more: false, pf: ''};
+                sel = null;
+                tab = 'ov';
+                flash(f.id == 'nc' ? 'Verein angelegt' : 'Du bist dem Verein beigetreten');
             } else if (f.id == 'cl') {
                 await api('/club', 'PUT', d);
                 await loadMe();
@@ -1313,7 +1351,7 @@
         lastY = y;
     }, {passive: true});
     (async () => {
-        if (store.getItem('tok') && !RESET) {
+        if (store.getItem('tok') && !RESET && !VERIFY) {
             try {
                 await loadMe();
                 await load();
