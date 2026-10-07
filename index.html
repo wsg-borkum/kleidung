@@ -891,6 +891,11 @@
         return t > 0 ? `<div class=panel><div class=row><b style="flex:1">Pfand im Verein</b><b>${eur(t)}</b></div><small>Noch nicht zurückgezahlt</small></div>` : '';
     };
 
+    function fillPlayers() {   // bei Rückgabe nur Spieler, die etwas ausgeliehen haben
+        const cur = $('#hp').value, list = dir == 'to_club' ? D.players.filter(p => p.holdings.length) : D.players;
+        $('#hp').innerHTML = `<option value="">${list.length ? 'Spieler wählen' : 'Kein Spieler hat etwas ausgeliehen'}</option>` + list.map(p => `<option value="${p.id}" ${p.id == cur ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
+    }
+
     function fillItems() {
         const p = D.players.find(x => x.id == $('#hp').value);
         const o = dir == 'to_player' ? D.items.filter(i => i.at_club > 0).map(i => [i.id, `${i.name} ${i.size} (${i.at_club} frei)`])
@@ -1090,6 +1095,7 @@
         }[tab]());
         if (tab == 'ho') {
             pad($('#cv'));
+            fillPlayers();
             fillItems();
         }
     }
@@ -1216,6 +1222,7 @@
         } else if (a.dir) {
             dir = a.dir;
             document.querySelectorAll('[data-dir]').forEach(x => x.classList.toggle('on', x.dataset.dir == dir));
+            fillPlayers();
             fillItems();
         } else if (b.id == 'out') {
             api('/logout', 'POST').catch(() => {
