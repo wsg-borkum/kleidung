@@ -7,156 +7,812 @@
     <meta name="color-scheme" content="light dark">
     <title>Vereinsverwaltung</title>
     <style>
-        :root{
-            --ink:#101c26;--sub:#586a77;--bg:#edf1f3;--surface:#fff;--line:#d9e2e7;
-            --table:#0f4a5c;--t2:#0f4a5c;--t2bg:#e0edf1;--ball:#ff7a1a;--on-ball:#101c26;
-            --ok:#1b7447;--ok-2:#e1f5ea;--bad:#b3261e;--bad-2:#fdebe9;
-            --hdr:calc(56px + env(safe-area-inset-top));--nav:64px;
-            --ui:ui-rounded,"SF Pro Rounded","Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;
+        :root {
+            --ink: #101c26;
+            --sub: #586a77;
+            --bg: #edf1f3;
+            --surface: #fff;
+            --line: #d9e2e7;
+            --table: #0f4a5c;
+            --t2: #0f4a5c;
+            --t2bg: #e0edf1;
+            --ball: #ff7a1a;
+            --on-ball: #101c26;
+            --ok: #1b7447;
+            --ok-2: #e1f5ea;
+            --bad: #b3261e;
+            --bad-2: #fdebe9;
+            --hdr: calc(56px + env(safe-area-inset-top));
+            --nav: 64px;
+            --ui: ui-rounded, "SF Pro Rounded", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
         }
-        @media (prefers-color-scheme:dark){:root{
-            --ink:#e8f0f4;--sub:#9db0bc;--bg:#0a1318;--surface:#131f27;--line:#243540;
-            --table:#0b3441;--t2:#62c4de;--t2bg:#173a47;--ok:#6fd39a;--ok-2:#143526;--bad:#ff9087;--bad-2:#3a1d1b}}
-        *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-        html{scroll-padding-top:var(--hdr)}
-        body{margin:0;min-height:100dvh;background:var(--bg);color:var(--ink);font:400 1rem/1.45 var(--ui)}
-        :focus-visible{outline:3px solid var(--ball);outline-offset:2px}
-        [hidden]{display:none!important}
 
-        header{position:sticky;top:0;z-index:10;height:var(--hdr);padding:env(safe-area-inset-top) .6rem 0 1rem;display:flex;align-items:center;gap:.6rem;background:var(--table);color:#fff}
-        header b{flex:1;min-width:0;display:flex;align-items:center;gap:.55rem;font-size:1.05rem;font-weight:700;letter-spacing:-.01em;white-space:nowrap;overflow:hidden}
-        header b::before{content:"";flex:none;width:.7rem;height:.7rem;border-radius:50%;background:var(--ball)}
-        header select{flex:1;min-width:0;height:40px;padding:0 2.2rem 0 1rem;border:0;border-radius:999px;background-color:rgba(255,255,255,.15);color:#fff;font-weight:700;appearance:none;background-repeat:no-repeat;background-position:right .85rem center;background-size:18px;text-overflow:ellipsis;
-            background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")}
-        header select option{color:#101c26}
-        #out{flex:none;width:44px;min-height:44px;height:44px;padding:0;border:0;border-radius:50%;background:transparent;color:#fff;display:grid;place-items:center}
-        #out svg{width:22px;height:22px}
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --ink: #e8f0f4;
+                --sub: #9db0bc;
+                --bg: #0a1318;
+                --surface: #131f27;
+                --line: #243540;
+                --table: #0b3441;
+                --t2: #62c4de;
+                --t2bg: #173a47;
+                --ok: #6fd39a;
+                --ok-2: #143526;
+                --bad: #ff9087;
+                --bad-2: #3a1d1b
+            }
+        }
 
-        main{max-width:640px;margin:0 auto;padding:1rem 1rem calc(var(--nav) + env(safe-area-inset-bottom) + 5.5rem)}
-        h1{margin:.3rem 0 1rem;font-size:1.65rem;line-height:1.15;font-weight:750;letter-spacing:-.02em}
-        small{color:var(--sub);font-size:.875rem}
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent
+        }
 
-        nav{position:fixed;inset:auto 0 0;z-index:10;display:flex;justify-content:center;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
-        nav button{flex:1;max-width:120px;min-width:0;height:var(--nav);min-height:0;padding:0;border:0;border-radius:0;background:none;color:var(--sub);
-            display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font:600 .66rem var(--ui)}
-        nav svg{box-sizing:content-box;width:24px;height:24px;padding:3px 14px;border-radius:999px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-        nav button.on{color:var(--t2)}
-        nav button.on svg{background:var(--t2bg)}
+        html {
+            scroll-padding-top: var(--hdr)
+        }
 
-        input,select{display:block;width:100%;height:48px;padding:0 .95rem;border:1.5px solid var(--line);border-radius:12px;background-color:var(--surface);color:var(--ink);font:inherit}
-        input::placeholder{color:var(--sub);opacity:.8}
-        select:not(header select){appearance:none;padding-right:2.5rem;background-repeat:no-repeat;background-position:right .9rem center;background-size:18px;
-            background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23788a97' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")}
-        input:focus,select:focus{border-color:var(--t2)}
-        button{min-height:48px;padding:0 1.1rem;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);font:600 .95rem var(--ui);cursor:pointer;touch-action:manipulation}
-        button:disabled{opacity:.4}
-        button.p{border-color:var(--ball);background:var(--ball);color:var(--on-ball);font-size:1rem;font-weight:750}
-        button.d{border-color:transparent;background:var(--bad-2);color:var(--bad)}
-        button.ghost{display:inline-flex;align-items:center;gap:.2rem;min-height:40px;padding:0 .3rem 0 0;border:0;background:none;color:var(--t2)}
-        button.lnk{min-height:0;padding:0;border:0;background:none;text-align:left;font-size:1.05rem;font-weight:700}
-        button.lnk::after{content:"\203A";margin-left:.45rem;color:var(--sub);font-weight:400}
-        @media (prefers-reduced-motion:no-preference){button{transition:transform .08s}button:active:not(:disabled){transform:scale(.97)}}
+        body {
+            margin: 0;
+            min-height: 100dvh;
+            background: var(--bg);
+            color: var(--ink);
+            font: 400 1rem/1.45 var(--ui)
+        }
 
-        .row{display:flex;flex-direction:row;flex-wrap:wrap;gap:.5rem;align-items:center}.row>*{min-width:0}.row>span{flex:1}
-        .row button{min-height:40px;padding:0 .85rem;font-size:.9rem}
-        form{display:flex;flex-direction:column;gap:.7rem;margin:0 0 1rem;padding:1rem;border-radius:16px;background:var(--surface)}
-        form.row{flex-wrap:nowrap}form.row button{min-height:48px}
-        form>b{font-size:1.05rem}
-        .panel{display:flex;flex-direction:column;gap:.7rem;margin:0 0 1rem;padding:1rem;border-radius:16px;background:var(--surface)}
-        .panel img{display:block;width:100%;border-radius:12px}
-        .nophoto{display:grid;place-items:center;height:96px;border:1.5px dashed var(--line);border-radius:12px;color:var(--sub);font-size:.9rem}
+        :focus-visible {
+            outline: 3px solid var(--ball);
+            outline-offset: 2px
+        }
 
-        .card,.ov{display:flex;flex-direction:column;gap:.4rem;padding:.9rem 1rem;border-bottom:1px solid var(--line);background:var(--surface)}
-        :not(.card)+.card{border-radius:16px 16px 0 0}
-        .card:not(:has(+ .card)){margin-bottom:1rem;border-bottom:0;border-radius:0 0 16px 16px}
-        :not(.card)+.card:not(:has(+ .card)){border-radius:16px}
-        .card.to_player{box-shadow:inset 4px 0 0 var(--ball)}.card.to_club{box-shadow:inset 4px 0 0 var(--t2)}
-        .list{margin-bottom:1rem;border-radius:16px;overflow:hidden}.list .ov:last-child{border-bottom:0}
-        .ov{gap:.55rem}
-        .bar{display:flex;gap:2px;height:10px;border-radius:999px;overflow:hidden;background:var(--line)}
-        .bar i{display:block;min-width:0}.bar .a{background:var(--t2)}.bar .b{background:var(--ball)}
-        .nums{display:flex;flex-wrap:wrap;gap:.1rem 1rem;color:var(--sub);font-size:.9rem}
-        .nums b{color:var(--ink);font-size:1rem}
-        .nums .a::before,.nums .b::before{content:"";display:inline-block;width:.55rem;height:.55rem;margin-right:.35rem;border-radius:50%}
-        .nums .a::before{background:var(--t2)}.nums .b::before{background:var(--ball)}.nums .tot{margin-left:auto}
-        .sz{display:inline-block;margin-left:.45rem;padding:.05rem .55rem;border-radius:999px;background:var(--t2bg);color:var(--t2);font-size:.82rem;font-weight:700;vertical-align:.1em}
-        .chip{flex:none;padding:.1rem .65rem;border-radius:999px;background:var(--line);color:var(--sub);font-size:.8rem;font-style:normal;font-weight:700}
-        .chip.on{background:var(--ok-2);color:var(--ok)}
+        [hidden] {
+            display: none !important
+        }
 
-        .tabs{display:flex;gap:2px;margin-bottom:1rem;padding:3px;border-radius:14px;background:var(--line)}
-        form .tabs{margin-bottom:0}
-        .tabs button{flex:1;min-height:42px;padding:0 .3rem;border:0;border-radius:11px;background:transparent;color:var(--sub);font-size:.88rem}
-        .tabs button.on{background:var(--surface);color:var(--ink)}
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            height: var(--hdr);
+            padding: env(safe-area-inset-top) .6rem 0 1rem;
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            background: var(--table);
+            color: #fff
+        }
 
-        #sg{display:flex;flex-direction:column;gap:.5rem}
-        .sigwrap{position:relative}
-        .sigwrap::before{content:"";position:absolute;left:1rem;right:1rem;bottom:30%;border-bottom:2px dashed #c3ccd2;pointer-events:none}
-        .sigwrap::after{content:"Hier unterschreiben";position:absolute;left:1rem;bottom:8%;color:#8896a0;font-size:.8rem;pointer-events:none}
-        canvas{display:block;width:100%;height:auto;aspect-ratio:600/220;border:1.5px solid var(--line);border-radius:12px;background:#fff;touch-action:none}
-        #ho>button.p{position:sticky;bottom:calc(var(--nav) + env(safe-area-inset-bottom) + .6rem)}
+        header b {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            gap: .55rem;
+            font-size: 1.05rem;
+            font-weight: 700;
+            letter-spacing: -.01em;
+            white-space: nowrap;
+            overflow: hidden
+        }
 
-        .msg{position:sticky;top:calc(var(--hdr) + .5rem);z-index:5;margin-bottom:1rem;padding:.8rem 1rem;border-radius:12px;font-weight:500}
-        .err{background:var(--bad-2);color:var(--bad)}.ok{background:var(--ok-2);color:var(--ok)}
-        #cam{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;background:#000}
-        #cam video{flex:1;min-height:0;width:100%;object-fit:contain;background:#000}
-        .camctl{display:flex;gap:.7rem;padding:1rem 1rem calc(1rem + env(safe-area-inset-bottom))}.camctl button{flex:1}
-        #fab{position:fixed;left:50%;bottom:calc(var(--nav) + env(safe-area-inset-bottom) + .9rem);z-index:9;transform:translateX(-50%);display:flex;align-items:center;gap:.5rem;
-            min-height:52px;padding:0 1.5rem 0 1.2rem;border:0;border-radius:999px;background:var(--ball);color:var(--on-ball);font:750 1rem var(--ui)}
-        #fab svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
-        #fab:active:not(:disabled){transform:translateX(-50%) scale(.97)}
-        #fab{transition:transform .2s ease,opacity .2s ease}
-        #fab.away{transform:translateX(-50%) translateY(calc(100% + var(--nav) + 2rem));opacity:0;pointer-events:none}
-        @media (prefers-reduced-motion:reduce){#fab{transition:none}}
+        header b::before {
+            content: "";
+            flex: none;
+            width: .7rem;
+            height: .7rem;
+            border-radius: 50%;
+            background: var(--ball)
+        }
+
+        header select {
+            flex: 1;
+            min-width: 0;
+            height: 40px;
+            padding: 0 2.2rem 0 1rem;
+            border: 0;
+            border-radius: 999px;
+            background-color: rgba(255, 255, 255, .15);
+            color: #fff;
+            font-weight: 700;
+            appearance: none;
+            background-repeat: no-repeat;
+            background-position: right .85rem center;
+            background-size: 18px;
+            text-overflow: ellipsis;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")
+        }
+
+        header select option {
+            color: #101c26
+        }
+
+        #out {
+            flex: none;
+            width: 44px;
+            min-height: 44px;
+            height: 44px;
+            padding: 0;
+            border: 0;
+            border-radius: 50%;
+            background: transparent;
+            color: #fff;
+            display: grid;
+            place-items: center
+        }
+
+        #out svg {
+            width: 22px;
+            height: 22px
+        }
+
+        main {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 1rem 1rem calc(var(--nav) + env(safe-area-inset-bottom) + 5.5rem)
+        }
+
+        h1 {
+            margin: .3rem 0 1rem;
+            font-size: 1.65rem;
+            line-height: 1.15;
+            font-weight: 750;
+            letter-spacing: -.02em
+        }
+
+        small {
+            color: var(--sub);
+            font-size: .875rem
+        }
+
+        nav {
+            position: fixed;
+            inset: auto 0 0;
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            background: var(--surface);
+            border-top: 1px solid var(--line);
+            padding-bottom: env(safe-area-inset-bottom)
+        }
+
+        nav button {
+            flex: 1;
+            max-width: 120px;
+            min-width: 0;
+            height: var(--nav);
+            min-height: 0;
+            padding: 0;
+            border: 0;
+            border-radius: 0;
+            background: none;
+            color: var(--sub);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            font: 600 .66rem var(--ui)
+        }
+
+        nav svg {
+            box-sizing: content-box;
+            width: 24px;
+            height: 24px;
+            padding: 3px 14px;
+            border-radius: 999px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round
+        }
+
+        nav button.on {
+            color: var(--t2)
+        }
+
+        nav button.on svg {
+            background: var(--t2bg)
+        }
+
+        input, select {
+            display: block;
+            width: 100%;
+            height: 48px;
+            padding: 0 .95rem;
+            border: 1.5px solid var(--line);
+            border-radius: 12px;
+            background-color: var(--surface);
+            color: var(--ink);
+            font: inherit
+        }
+
+        input::placeholder {
+            color: var(--sub);
+            opacity: .8
+        }
+
+        select:not(header select) {
+            appearance: none;
+            padding-right: 2.5rem;
+            background-repeat: no-repeat;
+            background-position: right .9rem center;
+            background-size: 18px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23788a97' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")
+        }
+
+        input:focus, select:focus {
+            border-color: var(--t2)
+        }
+
+        button {
+            min-height: 48px;
+            padding: 0 1.1rem;
+            border: 1.5px solid var(--line);
+            border-radius: 12px;
+            background: var(--surface);
+            color: var(--ink);
+            font: 600 .95rem var(--ui);
+            cursor: pointer;
+            touch-action: manipulation
+        }
+
+        button:disabled {
+            opacity: .4
+        }
+
+        button.p {
+            border-color: var(--ball);
+            background: var(--ball);
+            color: var(--on-ball);
+            font-size: 1rem;
+            font-weight: 750
+        }
+
+        button.d {
+            border-color: transparent;
+            background: var(--bad-2);
+            color: var(--bad)
+        }
+
+        button.ghost {
+            display: inline-flex;
+            align-items: center;
+            gap: .2rem;
+            min-height: 40px;
+            padding: 0 .3rem 0 0;
+            border: 0;
+            background: none;
+            color: var(--t2)
+        }
+
+        button.lnk {
+            min-height: 0;
+            padding: 0;
+            border: 0;
+            background: none;
+            text-align: left;
+            font-size: 1.05rem;
+            font-weight: 700
+        }
+
+        button.lnk::after {
+            content: "\203A";
+            margin-left: .45rem;
+            color: var(--sub);
+            font-weight: 400
+        }
+
+        @media (prefers-reduced-motion: no-preference) {
+            button {
+                transition: transform .08s
+            }
+
+            button:active:not(:disabled) {
+                transform: scale(.97)
+            }
+        }
+
+        .row {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: .5rem;
+            align-items: center
+        }
+
+        .row > * {
+            min-width: 0
+        }
+
+        .row > span {
+            flex: 1
+        }
+
+        .row button {
+            min-height: 40px;
+            padding: 0 .85rem;
+            font-size: .9rem
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: .7rem;
+            margin: 0 0 1rem;
+            padding: 1rem;
+            border-radius: 16px;
+            background: var(--surface)
+        }
+
+        form.row {
+            flex-wrap: nowrap
+        }
+
+        form.row button {
+            min-height: 48px
+        }
+
+        form > b {
+            font-size: 1.05rem
+        }
+
+        .panel {
+            display: flex;
+            flex-direction: column;
+            gap: .7rem;
+            margin: 0 0 1rem;
+            padding: 1rem;
+            border-radius: 16px;
+            background: var(--surface)
+        }
+
+        .panel img {
+            display: block;
+            width: 100%;
+            border-radius: 12px
+        }
+
+        .nophoto {
+            display: grid;
+            place-items: center;
+            height: 96px;
+            border: 1.5px dashed var(--line);
+            border-radius: 12px;
+            color: var(--sub);
+            font-size: .9rem
+        }
+
+        .card, .ov {
+            display: flex;
+            flex-direction: column;
+            gap: .4rem;
+            padding: .9rem 1rem;
+            border-bottom: 1px solid var(--line);
+            background: var(--surface)
+        }
+
+        :not(.card) + .card {
+            border-radius: 16px 16px 0 0
+        }
+
+        .card:not(:has(+ .card)) {
+            margin-bottom: 1rem;
+            border-bottom: 0;
+            border-radius: 0 0 16px 16px
+        }
+
+        :not(.card) + .card:not(:has(+ .card)) {
+            border-radius: 16px
+        }
+
+        .card.to_player {
+            box-shadow: inset 4px 0 0 var(--ball)
+        }
+
+        .card.to_club {
+            box-shadow: inset 4px 0 0 var(--t2)
+        }
+
+        .list {
+            margin-bottom: 1rem;
+            border-radius: 16px;
+            overflow: hidden
+        }
+
+        .list .ov:last-child {
+            border-bottom: 0
+        }
+
+        .ov {
+            gap: .55rem
+        }
+
+        .bar {
+            display: flex;
+            gap: 2px;
+            height: 10px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: var(--line)
+        }
+
+        .bar i {
+            display: block;
+            min-width: 0
+        }
+
+        .bar .a {
+            background: var(--t2)
+        }
+
+        .bar .b {
+            background: var(--ball)
+        }
+
+        .nums {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .1rem 1rem;
+            color: var(--sub);
+            font-size: .9rem
+        }
+
+        .nums b {
+            color: var(--ink);
+            font-size: 1rem
+        }
+
+        .nums .a::before, .nums .b::before {
+            content: "";
+            display: inline-block;
+            width: .55rem;
+            height: .55rem;
+            margin-right: .35rem;
+            border-radius: 50%
+        }
+
+        .nums .a::before {
+            background: var(--t2)
+        }
+
+        .nums .b::before {
+            background: var(--ball)
+        }
+
+        .nums .tot {
+            margin-left: auto
+        }
+
+        .sz {
+            display: inline-block;
+            margin-left: .45rem;
+            padding: .05rem .55rem;
+            border-radius: 999px;
+            background: var(--t2bg);
+            color: var(--t2);
+            font-size: .82rem;
+            font-weight: 700;
+            vertical-align: .1em
+        }
+
+        .chip {
+            flex: none;
+            padding: .1rem .65rem;
+            border-radius: 999px;
+            background: var(--line);
+            color: var(--sub);
+            font-size: .8rem;
+            font-style: normal;
+            font-weight: 700
+        }
+
+        .chip.on {
+            background: var(--ok-2);
+            color: var(--ok)
+        }
+
+        .tabs {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 1rem;
+            padding: 3px;
+            border-radius: 14px;
+            background: var(--line)
+        }
+
+        form .tabs {
+            margin-bottom: 0
+        }
+
+        .tabs button {
+            flex: 1;
+            min-height: 42px;
+            padding: 0 .3rem;
+            border: 0;
+            border-radius: 11px;
+            background: transparent;
+            color: var(--sub);
+            font-size: .88rem
+        }
+
+        .tabs button.on {
+            background: var(--surface);
+            color: var(--ink)
+        }
+
+        #sg {
+            display: flex;
+            flex-direction: column;
+            gap: .5rem
+        }
+
+        .sigwrap {
+            position: relative
+        }
+
+        .sigwrap::before {
+            content: "";
+            position: absolute;
+            left: 1rem;
+            right: 1rem;
+            bottom: 30%;
+            border-bottom: 2px dashed #c3ccd2;
+            pointer-events: none
+        }
+
+        .sigwrap::after {
+            content: "Hier unterschreiben";
+            position: absolute;
+            left: 1rem;
+            bottom: 8%;
+            color: #8896a0;
+            font-size: .8rem;
+            pointer-events: none
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            aspect-ratio: 600/220;
+            border: 1.5px solid var(--line);
+            border-radius: 12px;
+            background: #fff;
+            touch-action: none
+        }
+
+        #ho > button.p {
+            position: sticky;
+            bottom: calc(var(--nav) + env(safe-area-inset-bottom) + .6rem)
+        }
+
+        .msg {
+            position: sticky;
+            top: calc(var(--hdr) + .5rem);
+            z-index: 5;
+            margin-bottom: 1rem;
+            padding: .8rem 1rem;
+            border-radius: 12px;
+            font-weight: 500
+        }
+
+        .err {
+            background: var(--bad-2);
+            color: var(--bad)
+        }
+
+        .ok {
+            background: var(--ok-2);
+            color: var(--ok)
+        }
+
+        #cam {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            background: #000
+        }
+
+        #cam video {
+            flex: 1;
+            min-height: 0;
+            width: 100%;
+            object-fit: contain;
+            background: #000
+        }
+
+        .camctl {
+            display: flex;
+            gap: .7rem;
+            padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom))
+        }
+
+        .camctl button {
+            flex: 1
+        }
+
+        #fab {
+            position: fixed;
+            left: 50%;
+            bottom: calc(var(--nav) + env(safe-area-inset-bottom) + .9rem);
+            z-index: 9;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            min-height: 52px;
+            padding: 0 1.5rem 0 1.2rem;
+            border: 0;
+            border-radius: 999px;
+            background: var(--ball);
+            color: var(--on-ball);
+            font: 750 1rem var(--ui)
+        }
+
+        #fab svg {
+            width: 22px;
+            height: 22px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2.2;
+            stroke-linecap: round;
+            stroke-linejoin: round
+        }
+
+        #fab:active:not(:disabled) {
+            transform: translateX(-50%) scale(.97)
+        }
+
+        #fab {
+            transition: transform .2s ease, opacity .2s ease
+        }
+
+        #fab.away {
+            transform: translateX(-50%) translateY(calc(100% + var(--nav) + 2rem));
+            opacity: 0;
+            pointer-events: none
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            #fab {
+                transition: none
+            }
+        }
     </style>
 </head>
 <body>
-<header><b id="title">Vereinsverwaltung</b><select id="club" hidden></select><button id="out" hidden aria-label="Abmelden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4H5v16h5M15 8l4 4-4 4M19 12H9"/></svg></button></header>
+<header><b id="title">Vereinsverwaltung</b><select id="club" hidden></select>
+    <button id="out" hidden aria-label="Abmelden">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+             stroke-linejoin="round">
+            <path d="M10 4H5v16h5M15 8l4 4-4 4M19 12H9"/>
+        </svg>
+    </button>
+</header>
 <main id="m"></main>
 <nav id="nav" hidden></nav>
-<button id="fab" data-tab="ho" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h12m0 0l-3-3m3 3l-3 3M17 17H5m0 0l3-3m-3 3l3 3"/></svg>Übergabe</button>
-<div id="cam" hidden><video id="camv" playsinline muted autoplay></video><div class="camctl"><button type="button" id="camx">Abbrechen</button><button type="button" id="camsnap" class="p">Aufnehmen</button></div></div>
+<button id="fab" data-tab="ho" hidden>
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M7 7h12m0 0l-3-3m3 3l-3 3M17 17H5m0 0l3-3m-3 3l3 3"/>
+    </svg>
+    Übergabe
+</button>
+<div id="cam" hidden>
+    <video id="camv" playsinline muted autoplay></video>
+    <div class="camctl">
+        <button type="button" id="camx">Abbrechen</button>
+        <button type="button" id="camsnap" class="p">Aufnehmen</button>
+    </div>
+</div>
 <script>
     const API = 'https://familieschmidt.biz/api';   // ohne Slash am Ende
     const store = localStorage;                        // sessionStorage: Login endet mit dem Tab
-    const E = {invalid_credentials:'E-Mail oder Passwort falsch', invalid_code:'Code oder E-Mail ungültig bzw. abgelaufen',
-        email_taken:'E-Mail ist bereits vergeben', invalid_email:'E-Mail ungültig', invalid_password:'Passwort mindestens 8 Zeichen',
-        duplicate:'Eintrag existiert bereits', no_stock:'Kein Bestand beim Verein', player_has_none:'Spieler hat dieses Stück nicht',
-        player_holds_items:'Spieler hält noch Kleidungsstücke', item_held:'Stück ist noch bei Spielern',
-        qty_below_held:'Stückzahl kleiner als bei Spielern', too_many_attempts:'Zu viele Versuche, bitte später erneut',
-        invalid_signature:'Unterschrift fehlt', unauthorized:'Bitte neu einloggen', no_club:'Kein Verein zugeordnet', invalid_token:'Link ungültig oder abgelaufen', invalid_photo:'Foto ungültig', cannot_remove_self:'Du kannst dich nicht selbst entfernen'};
+    const E = {
+        invalid_credentials: 'E-Mail oder Passwort falsch',
+        invalid_code: 'Code oder E-Mail ungültig bzw. abgelaufen',
+        email_taken: 'E-Mail ist bereits vergeben',
+        invalid_email: 'E-Mail ungültig',
+        invalid_password: 'Passwort mindestens 8 Zeichen',
+        duplicate: 'Eintrag existiert bereits',
+        no_stock: 'Kein Bestand beim Verein',
+        player_has_none: 'Spieler hat dieses Stück nicht',
+        player_holds_items: 'Spieler hält noch Kleidungsstücke',
+        item_held: 'Stück ist noch bei Spielern',
+        qty_below_held: 'Stückzahl kleiner als bei Spielern',
+        too_many_attempts: 'Zu viele Versuche, bitte später erneut',
+        invalid_signature: 'Unterschrift fehlt',
+        unauthorized: 'Bitte neu einloggen',
+        no_club: 'Kein Verein zugeordnet',
+        invalid_token: 'Link ungültig oder abgelaufen',
+        invalid_photo: 'Foto ungültig',
+        cannot_remove_self: 'Du kannst dich nicht selbst entfernen'
+    };
     const $ = s => document.querySelector(s);
-    const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    let me = null, tab = 'ov', lt = 'login', dir = 'to_player', msg = null, D = {items:[], players:[], officials:[]};
-    let H = {rows:[], more:false, pf:''}, sel = null, PH = {};
-    let RESET = (location.hash.match(/^#reset=([0-9a-f]{64})$/) || [])[1] || null; if (RESET) lt = 'reset';
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    }[c]));
+    let me = null, tab = 'ov', lt = 'login', dir = 'to_player', msg = null, D = {items: [], players: [], officials: []};
+    let H = {rows: [], more: false, pf: ''}, sel = null, PH = {};
+    let RESET = (location.hash.match(/^#reset=([0-9a-f]{64})$/) || [])[1] || null;
+    if (RESET) lt = 'reset';
     const flash = (t, c = 'ok') => msg = {h: esc(t), c};
 
     async function api(p, m = 'GET', b) {
         const t = store.getItem('tok');
-        const r = await fetch(API + p, {method: m, body: b ? JSON.stringify(b) : undefined,
-            headers: {...(b ? {'Content-Type':'application/json'} : {}), ...(t ? {Authorization:'Bearer ' + t, 'X-Club': store.getItem('club') || ''} : {})}});
+        const r = await fetch(API + p, {
+            method: m, body: b ? JSON.stringify(b) : undefined,
+            headers: {
+                ...(b ? {'Content-Type': 'application/json'} : {}), ...(t ? {
+                    Authorization: 'Bearer ' + t,
+                    'X-Club': store.getItem('club') || ''
+                } : {})
+            }
+        });
         const d = await r.json().catch(() => ({}));
-        if (r.status === 401 && t) { store.removeItem('tok'); me = null; }
+        if (r.status === 401 && t) {
+            store.removeItem('tok');
+            me = null;
+        }
         if (!r.ok) throw new Error(E[d.error] || d.error || r.status);
         return d;
     }
+
     const load = async () => [D.items, D.players, D.officials] = await Promise.all([api('/items'), api('/players'), api('/officials')]);
-    const loadMe = async () => { me = await api('/me'); store.setItem('club', me.id); };
+    const loadMe = async () => {
+        me = await api('/me');
+        store.setItem('club', me.id);
+    };
+
     async function hist(more) {
         const last = more && H.rows.length ? '&before=' + H.rows[H.rows.length - 1].id : '';
         const r = await api(`/handovers?player_id=${H.pf || 0}${last}`);
-        H.rows = more ? H.rows.concat(r) : r; H.more = r.length == 50;
+        H.rows = more ? H.rows.concat(r) : r;
+        H.more = r.length == 50;
     }
-    const go = fn => fn().catch(e => { msg = {h: esc(e.message), c:'err'}; render(); });
+
+    const go = fn => fn().catch(e => {
+        msg = {h: esc(e.message), c: 'err'};
+        render();
+    });
 
     function pad(c) {
-        const x = c.getContext('2d'); let d = false;
-        const clear = () => { x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.strokeStyle = '#000'; x.lineWidth = 3; x.lineCap = 'round'; c.dirty = false; };
-        const pt = e => { const r = c.getBoundingClientRect(); return [(e.clientX - r.left) * c.width / r.width, (e.clientY - r.top) * c.height / r.height]; };
-        c.onpointerdown = e => { d = true; c.setPointerCapture(e.pointerId); x.beginPath(); x.moveTo(...pt(e)); };
-        c.onpointermove = e => { if (!d) return; x.lineTo(...pt(e)); x.stroke(); c.dirty = true; };
+        const x = c.getContext('2d');
+        let d = false;
+        const clear = () => {
+            x.fillStyle = '#fff';
+            x.fillRect(0, 0, c.width, c.height);
+            x.strokeStyle = '#000';
+            x.lineWidth = 3;
+            x.lineCap = 'round';
+            c.dirty = false;
+        };
+        const pt = e => {
+            const r = c.getBoundingClientRect();
+            return [(e.clientX - r.left) * c.width / r.width, (e.clientY - r.top) * c.height / r.height];
+        };
+        c.onpointerdown = e => {
+            d = true;
+            c.setPointerCapture(e.pointerId);
+            x.beginPath();
+            x.moveTo(...pt(e));
+        };
+        c.onpointermove = e => {
+            if (!d) return;
+            x.lineTo(...pt(e));
+            x.stroke();
+            c.dirty = true;
+        };
         c.onpointerup = c.onpointercancel = () => d = false;
-        c.clear = clear; clear();
+        c.clear = clear;
+        clear();
     }
 
     function fillItems() {
@@ -165,7 +821,13 @@
             : (p ? p.holdings.map(h => [h.item_id, `${h.name} ${h.size} (${h.qty})`]) : []);
         $('#hi').innerHTML = '<option value="">Kleidungsstück wählen</option>' + o.map(([v, t]) => `<option value="${v}">${esc(t)}</option>`).join('');
     }
-    function showCode(n, c) { msg = {h: `Code für ${esc(n)}: <b>${esc(c)}</b><br><small>Einmalig verwendbar, 7 Tage gültig, wird nur jetzt angezeigt.</small>`, c:'ok'}; }
+
+    function showCode(n, c) {
+        msg = {
+            h: `Code für ${esc(n)}: <b>${esc(c)}</b><br><small>Einmalig verwendbar, 7 Tage gültig, wird nur jetzt angezeigt.</small>`,
+            c: 'ok'
+        };
+    }
 
     const vLogin = () => {
         const f = {
@@ -173,8 +835,15 @@
             join: `<input name=code placeholder="Einladungscode" required autocapitalize=characters><input name=email type=email placeholder="E-Mail" required><input name=password type=password minlength=8 placeholder="Passwort (mind. 8 Zeichen)" required><small>Gleiche E-Mail wie ein bestehender Zugang? Dann bestehendes Passwort eingeben.</small><button class=p>Beitreten</button>`,
             club: `<input name=club_name placeholder="Vereinsname" required><input name=name placeholder="Dein Name" required><input name=email type=email placeholder="E-Mail" required><input name=password type=password minlength=8 placeholder="Passwort (mind. 8 Zeichen)" required><small>Gleiche E-Mail wie ein bestehender Zugang? Dann bestehendes Passwort eingeben.</small><button class=p>Verein anlegen</button>`,
             forgot: `<input name=email type=email placeholder="E-Mail" required><button class=p>Link zum Zurücksetzen senden</button>`,
-            reset: `<input name=password type=password minlength=8 placeholder="Neues Passwort (mind. 8 Zeichen)" required autocomplete=new-password><button class=p>Passwort setzen</button>`}[lt];
-        return `<h1>${{login:'Willkommen zurück', join:'Einem Verein beitreten', club:'Neuen Verein anlegen', forgot:'Passwort zurücksetzen', reset:'Neues Passwort setzen'}[lt]}</h1><div class=tabs>${[['login','Einloggen'],['join','Beitreten'],['club','Neuer Verein']].map(([k, l]) => `<button data-lt=${k} class="${lt == k ? 'on' : ''}">${l}</button>`).join('')}</div><form id=auth>${f}</form>`;
+            reset: `<input name=password type=password minlength=8 placeholder="Neues Passwort (mind. 8 Zeichen)" required autocomplete=new-password><button class=p>Passwort setzen</button>`
+        }[lt];
+        return `<h1>${{
+            login: 'Willkommen zurück',
+            join: 'Einem Verein beitreten',
+            club: 'Neuen Verein anlegen',
+            forgot: 'Passwort zurücksetzen',
+            reset: 'Neues Passwort setzen'
+        }[lt]}</h1><div class=tabs>${[['login', 'Einloggen'], ['join', 'Beitreten'], ['club', 'Neuer Verein']].map(([k, l]) => `<button data-lt=${k} class="${lt == k ? 'on' : ''}">${l}</button>`).join('')}</div><form id=auth>${f}</form>`;
     };
     const vOv = () => D.items.length ? `<div class=list>${D.items.map(i => `<div class=ov><button class=lnk data-item=${i.id}>${esc(i.name)}<span class=sz>${esc(i.size)}</span></button>
   <div class=bar><i class=a style="flex:${i.at_club}"></i><i class=b style="flex:${i.at_players}"></i></div>
@@ -188,7 +857,10 @@
   <button class=p>Übergabe speichern</button></form>`;
     const vHv = () => `<select id=hf style="margin-bottom:1rem"><option value="">Alle Spieler</option>${D.players.map(p => `<option value="${p.id}" ${p.id == H.pf ? 'selected' : ''}>${esc(p.name)}</option>`).join('')}</select>` +
         (H.rows.map(x => `<div class="card ${x.direction}"><div class=row><b style="flex:1">${x.direction == 'to_player' ? 'Ausgabe an' : 'Rückgabe von'} ${esc(x.player_name)}</b>${x.has_sig ? `<button data-act=sig data-id=${x.id}>Unterschrift</button>` : ''}</div>
-  <span>${esc(x.item_name)}<span class=sz>${esc(x.item_size)}</span></span><small>${new Date(x.created_at).toLocaleString('de-DE', {dateStyle:'medium', timeStyle:'short'})}, ${esc(x.official_name)}</small><div id=s${x.id}></div></div>`).join('')
+  <span>${esc(x.item_name)}<span class=sz>${esc(x.item_size)}</span></span><small>${new Date(x.created_at).toLocaleString('de-DE', {
+                dateStyle: 'medium',
+                timeStyle: 'short'
+            })}, ${esc(x.official_name)}</small><div id=s${x.id}></div></div>`).join('')
             || '<div class=panel><b>Noch keine Übergaben</b><small>Sie erscheinen hier, sobald du die erste speicherst.</small></div>') +
         (H.more ? '<button data-act=more style="width:100%">Mehr laden</button>' : '');
     const vDet = () => {
@@ -204,16 +876,21 @@
     const toJpeg = file => new Promise((res, rej) => {
         const img = new Image(), u = URL.createObjectURL(file);
         img.onload = () => {
-            const k = Math.min(1, 800 / Math.max(img.width, img.height)), c = document.createElement('canvas'), x = c.getContext('2d');
-            c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
-            x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height);
-            URL.revokeObjectURL(u); res(c.toDataURL('image/jpeg', 0.8));
+            const k = Math.min(1, 800 / Math.max(img.width, img.height)), c = document.createElement('canvas'),
+                x = c.getContext('2d');
+            c.width = Math.round(img.width * k);
+            c.height = Math.round(img.height * k);
+            x.fillStyle = '#fff';
+            x.fillRect(0, 0, c.width, c.height);
+            x.drawImage(img, 0, 0, c.width, c.height);
+            URL.revokeObjectURL(u);
+            res(c.toDataURL('image/jpeg', 0.8));
         };
         img.onerror = () => rej(new Error('Bild konnte nicht gelesen werden'));
         img.src = u;
     });
     const vPl = () => `<form id=pa class=row><input name=name placeholder="Name des Spielers" required style="flex:1"><button class=p>Anlegen</button></form>` +
-        D.players.map(p => `<div class=card><div class=row><b style="flex:1">${esc(p.name)}</b><button data-act=pedit data-id=${p.id}>Ändern</button><button class=d data-act=pdel data-id=${p.id}>Löschen</button></div>
+        D.players.map(p => `<div class=card><div class=row><b style="flex:1">${esc(p.name)}</b><button data-act=pedit data-id=${p.id}>Ändern</button><button class=d data-act=pdel data-id=${p.id} ${p.holdings.length ? 'disabled' : ''}>Löschen</button></div>
   <small>${p.holdings.map(h => `${h.qty}× ${esc(h.name)} ${esc(h.size)}`).join(', ') || 'nichts ausgegeben'}</small></div>`).join('');
     const vIt = () => `<form id=ia><input name=name placeholder="Bezeichnung (z. B. Trikot)" required><div class=row><input name=size placeholder="Größe" required style="flex:1"><input name=total_qty type=number min=0 value=1 required style="width:90px"></div><button class=p>Anlegen</button></form>` +
         D.items.map(i => `<div class=card><button class=lnk data-item=${i.id}>${esc(i.name)}<span class=sz>${esc(i.size)}</span>${i.has_photo ? ' 📷' : ''}</button><small>${i.at_club} im Verein, ${i.at_players} bei Spielern</small>
@@ -223,10 +900,20 @@
         `<form id=pw><b>Mein Passwort ändern</b><input name=old_password type=password placeholder="Aktuelles Passwort" required autocomplete=current-password><input name=password type=password minlength=8 placeholder="Neues Passwort (mind. 8 Zeichen)" required autocomplete=new-password><button class=p>Passwort ändern</button></form>`;
 
     let camStream = null;
+
     async function openCam() {   // Live-Kamera im Browser; ohne Kamera-API bleibt die System-Kamera als Ausweg
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { $('#pc').click(); return; }
-        try { camStream = await navigator.mediaDevices.getUserMedia({video: {facingMode: {ideal: 'environment'}, width: {ideal: 1280}}, audio: false}); }
-        catch (e) {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            $('#pc').click();
+            return;
+        }
+        try {
+            camStream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: {ideal: 'environment'},
+                    width: {ideal: 1280}
+                }, audio: false
+            });
+        } catch (e) {
             const m = String(e.message || '');
             throw new Error((e.name == 'NotAllowedError'
                 ? (/system/i.test(m) ? 'Android verweigert Chrome die Kamera. Öffne Einstellungen, Apps, Chrome, Berechtigungen, Kamera und wähle „Nur bei Nutzung der App zulassen“.'
@@ -234,94 +921,268 @@
                         : 'Die Kamera ist für diese Seite blockiert. Tippe in der Adressleiste auf das Symbol links, dann Berechtigungen, Kamera zurücksetzen.')
                 : 'Kamera nicht verfügbar. Bitte „Aus Galerie wählen“ nutzen.') + ` (${e.name}: ${m})`);
         }
-        const v = $('#camv'); v.srcObject = camStream; $('#cam').hidden = false; await v.play();
+        const v = $('#camv');
+        v.srcObject = camStream;
+        $('#cam').hidden = false;
+        await v.play();
     }
-    function closeCam() { if (camStream) camStream.getTracks().forEach(t => t.stop()); camStream = null; $('#camv').srcObject = null; $('#cam').hidden = true; }
+
+    function closeCam() {
+        if (camStream) camStream.getTracks().forEach(t => t.stop());
+        camStream = null;
+        $('#camv').srcObject = null;
+        $('#cam').hidden = true;
+    }
+
     async function snap() {
-        const v = $('#camv'), k = Math.min(1, 800 / Math.max(v.videoWidth, v.videoHeight)), c = document.createElement('canvas');
-        c.width = Math.round(v.videoWidth * k); c.height = Math.round(v.videoHeight * k);
+        const v = $('#camv'), k = Math.min(1, 800 / Math.max(v.videoWidth, v.videoHeight)),
+            c = document.createElement('canvas');
+        c.width = Math.round(v.videoWidth * k);
+        c.height = Math.round(v.videoHeight * k);
         c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
-        const d = c.toDataURL('image/jpeg', 0.8); closeCam();
-        await api(`/items/${sel}/photo`, 'PUT', {photo: d}); PH[sel] = d; await load(); render();
+        const d = c.toDataURL('image/jpeg', 0.8);
+        closeCam();
+        await api(`/items/${sel}/photo`, 'PUT', {photo: d});
+        PH[sel] = d;
+        await load();
+        render();
     }
+
     const IC = {
-        ov:'<path d="M4 7l8-4 8 4v10l-8 4-8-4z"/><path d="M4 7l8 4 8-4M12 11v10"/>',
-        ho:'<path d="M7 7h12m0 0l-3-3m3 3l-3 3M17 17H5m0 0l3-3m-3 3l3 3"/>',
-        hv:'<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>',
-        pl:'<circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/>',
-        it:'<path d="M8 4L3 7l2 4 3-1v10h8V10l3 1 2-4-5-3c-.5 1.5-1.7 2.2-3 2.2S8.5 5.5 8 4z"/>',
-        of:'<circle cx="9" cy="9" r="3"/><path d="M3 20c0-3 2.7-5 6-5s6 2 6 5M16 6a3 3 0 010 6M18 15c2 .5 3 2.3 3 5"/>'};
-    const TT = {ov:'Übersicht', ho:'Übergabe', hv:'Verlauf', pl:'Spieler', it:'Kleidung', of:'Funktionäre'};
+        ov: '<path d="M4 7l8-4 8 4v10l-8 4-8-4z"/><path d="M4 7l8 4 8-4M12 11v10"/>',
+        ho: '<path d="M7 7h12m0 0l-3-3m3 3l-3 3M17 17H5m0 0l3-3m-3 3l3 3"/>',
+        hv: '<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>',
+        pl: '<circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/>',
+        it: '<path d="M8 4L3 7l2 4 3-1v10h8V10l3 1 2-4-5-3c-.5 1.5-1.7 2.2-3 2.2S8.5 5.5 8 4z"/>',
+        of: '<circle cx="9" cy="9" r="3"/><path d="M3 20c0-3 2.7-5 6-5s6 2 6 5M16 6a3 3 0 010 6M18 15c2 .5 3 2.3 3 5"/>'
+    };
+    const TT = {ov: 'Übersicht', ho: 'Übergabe', hv: 'Verlauf', pl: 'Spieler', it: 'Kleidung', of: 'Funktionäre'};
+
     function render() {
         $('#out').hidden = $('#nav').hidden = !me;
         $('#fab').hidden = !me || tab == 'ho';
         const multi = me && me.clubs.length > 1;
-        $('#title').hidden = multi; $('#club').hidden = !multi;
+        $('#title').hidden = multi;
+        $('#club').hidden = !multi;
         $('#title').textContent = me ? me.club_name : 'Vereinsverwaltung';
         if (multi) $('#club').innerHTML = me.clubs.map(c => `<option value="${c.id}" ${c.id == me.id ? 'selected' : ''}>${esc(c.club_name)}</option>`).join('');
-        const h = msg ? `<div class="msg ${msg.c}">${msg.h}</div>` : ''; msg = null;
-        if (!me) { $('#m').innerHTML = h + vLogin(); return; }
-        $('#nav').innerHTML = [['ov','Übersicht'],['hv','Verlauf'],['pl','Spieler'],['it','Kleidung'],['of','Funktionäre']]
+        const h = msg ? `<div class="msg ${msg.c}">${msg.h}</div>` : '';
+        msg = null;
+        if (!me) {
+            $('#m').innerHTML = h + vLogin();
+            return;
+        }
+        $('#nav').innerHTML = [['ov', 'Übersicht'], ['hv', 'Verlauf'], ['pl', 'Spieler'], ['it', 'Kleidung'], ['of', 'Funktionäre']]
             .map(([k, l]) => `<button data-tab=${k} class="${tab == k ? 'on' : ''}"><svg viewBox="0 0 24 24" aria-hidden="true">${IC[k]}</svg>${l}</button>`).join('');
         if (sel && !D.items.some(x => x.id == sel)) sel = null;
-        $('#m').innerHTML = h + (sel ? vDet() : `<h1>${TT[tab]}</h1>` + {ov:vOv, ho:vHo, hv:vHv, pl:vPl, it:vIt, of:vOf}[tab]());
-        if (tab == 'ho') { pad($('#cv')); fillItems(); }
+        $('#m').innerHTML = h + (sel ? vDet() : `<h1>${TT[tab]}</h1>` + {
+            ov: vOv,
+            ho: vHo,
+            hv: vHv,
+            pl: vPl,
+            it: vIt,
+            of: vOf
+        }[tab]());
+        if (tab == 'ho') {
+            pad($('#cv'));
+            fillItems();
+        }
     }
 
     document.addEventListener('change', e => {
         if (e.target.id == 'hp') fillItems();
-        else if (e.target.id == 'club') go(async () => { store.setItem('club', e.target.value); await loadMe(); await load(); H = {rows:[], more:false, pf:''}; sel = null; if (tab == 'hv') await hist(); render(); });
-        else if (e.target.id == 'pf' || e.target.id == 'pc') go(async () => { const f = e.target.files[0]; e.target.value = ''; if (!f) return; const d = await toJpeg(f); await api(`/items/${sel}/photo`, 'PUT', {photo: d}); PH[sel] = d; await load(); render(); });
-        else if (e.target.id == 'hf') go(async () => { H.pf = e.target.value; await hist(); render(); });
+        else if (e.target.id == 'club') go(async () => {
+            store.setItem('club', e.target.value);
+            await loadMe();
+            await load();
+            H = {rows: [], more: false, pf: ''};
+            sel = null;
+            if (tab == 'hv') await hist();
+            render();
+        });
+        else if (e.target.id == 'pf' || e.target.id == 'pc') go(async () => {
+            const f = e.target.files[0];
+            e.target.value = '';
+            if (!f) return;
+            const d = await toJpeg(f);
+            await api(`/items/${sel}/photo`, 'PUT', {photo: d});
+            PH[sel] = d;
+            await load();
+            render();
+        });
+        else if (e.target.id == 'hf') go(async () => {
+            H.pf = e.target.value;
+            await hist();
+            render();
+        });
     });
-    document.addEventListener('submit', e => { e.preventDefault(); const f = e.target, d = Object.fromEntries(new FormData(f)); go(async () => {
-        if (f.id == 'auth' && lt == 'forgot') { await api('/forgot', 'POST', d); lt = 'login'; flash('Falls zu dieser E-Mail ein Zugang existiert, wurde ein Link verschickt.'); }
-        else if (f.id == 'auth' && lt == 'reset') { await api('/reset', 'POST', {token: RESET, password: d.password}); RESET = null; history.replaceState(null, '', location.pathname); lt = 'login'; flash('Passwort geändert, bitte einloggen.'); }
-        else if (f.id == 'auth') { const r = await api({login:'/login', join:'/join', club:'/clubs'}[lt], 'POST', d); store.setItem('tok', r.token); if (r.official_id) store.setItem('club', r.official_id); await loadMe(); await load(); H = {rows:[], more:false, pf:''}; sel = null; tab = 'ov'; }
-        else if (f.id == 'pa') { await api('/players', 'POST', d); await load(); flash('Spieler angelegt'); }
-        else if (f.id == 'ia') { d.total_qty = +d.total_qty; await api('/items', 'POST', d); await load(); flash('Kleidungsstück angelegt'); }
-        else if (f.id == 'oa') { const r = await api('/officials', 'POST', d); await load(); showCode(d.name, r.code); }
-        else if (f.id == 'pw') { await api('/password', 'POST', d); flash('Passwort geändert, andere Geräte wurden abgemeldet'); }
-        else if (f.id == 'ho') {
-            const cv = $('#cv'); if (dir == 'to_player' && !cv.dirty) throw new Error(E.invalid_signature);
-            await api('/handovers', 'POST', {player_id: +$('#hp').value, item_id: +$('#hi').value, direction: dir, signature: dir == 'to_player' ? cv.toDataURL('image/png') : undefined});
-            await load(); flash('Übergabe gespeichert');
-        }
-        render(); }); });
+    document.addEventListener('submit', e => {
+        e.preventDefault();
+        const f = e.target, d = Object.fromEntries(new FormData(f));
+        go(async () => {
+            if (f.id == 'auth' && lt == 'forgot') {
+                await api('/forgot', 'POST', d);
+                lt = 'login';
+                flash('Falls zu dieser E-Mail ein Zugang existiert, wurde ein Link verschickt.');
+            } else if (f.id == 'auth' && lt == 'reset') {
+                await api('/reset', 'POST', {token: RESET, password: d.password});
+                RESET = null;
+                history.replaceState(null, '', location.pathname);
+                lt = 'login';
+                flash('Passwort geändert, bitte einloggen.');
+            } else if (f.id == 'auth') {
+                const r = await api({login: '/login', join: '/join', club: '/clubs'}[lt], 'POST', d);
+                store.setItem('tok', r.token);
+                if (r.official_id) store.setItem('club', r.official_id);
+                await loadMe();
+                await load();
+                H = {rows: [], more: false, pf: ''};
+                sel = null;
+                tab = 'ov';
+            } else if (f.id == 'pa') {
+                await api('/players', 'POST', d);
+                await load();
+                flash('Spieler angelegt');
+            } else if (f.id == 'ia') {
+                d.total_qty = +d.total_qty;
+                await api('/items', 'POST', d);
+                await load();
+                flash('Kleidungsstück angelegt');
+            } else if (f.id == 'oa') {
+                const r = await api('/officials', 'POST', d);
+                await load();
+                showCode(d.name, r.code);
+            } else if (f.id == 'pw') {
+                await api('/password', 'POST', d);
+                flash('Passwort geändert, andere Geräte wurden abgemeldet');
+            } else if (f.id == 'ho') {
+                const cv = $('#cv');
+                if (dir == 'to_player' && !cv.dirty) throw new Error(E.invalid_signature);
+                await api('/handovers', 'POST', {
+                    player_id: +$('#hp').value,
+                    item_id: +$('#hi').value,
+                    direction: dir,
+                    signature: dir == 'to_player' ? cv.toDataURL('image/png') : undefined
+                });
+                await load();
+                flash('Übergabe gespeichert');
+            }
+            render();
+        });
+    });
     document.addEventListener('click', e => {
-        const b = e.target.closest('button'); if (!b) return; const a = b.dataset;
-        if (a.lt) { lt = a.lt; render(); }
-        else if (a.tab) { tab = a.tab; sel = null; window.scrollTo(0, 0); if (tab == 'hv') go(async () => { await hist(); render(); }); else render(); }
-        else if (a.dir) { dir = a.dir; document.querySelectorAll('[data-dir]').forEach(x => x.classList.toggle('on', x.dataset.dir == dir)); $('#sg').hidden = dir == 'to_club'; fillItems(); }
-        else if (b.id == 'out') { api('/logout', 'POST').catch(() => {}); store.removeItem('tok'); me = null; render(); }
-        else if (a.act == 'clr') $('#cv').clear();
-        else if (a.act == 'back') { sel = null; render(); }
-        else if (a.act == 'photo') $('#pf').click();
+        const b = e.target.closest('button');
+        if (!b) return;
+        const a = b.dataset;
+        if (a.lt) {
+            lt = a.lt;
+            render();
+        } else if (a.tab) {
+            tab = a.tab;
+            sel = null;
+            window.scrollTo(0, 0);
+            if (tab == 'hv') go(async () => {
+                await hist();
+                render();
+            }); else render();
+        } else if (a.dir) {
+            dir = a.dir;
+            document.querySelectorAll('[data-dir]').forEach(x => x.classList.toggle('on', x.dataset.dir == dir));
+            $('#sg').hidden = dir == 'to_club';
+            fillItems();
+        } else if (b.id == 'out') {
+            api('/logout', 'POST').catch(() => {
+            });
+            store.removeItem('tok');
+            me = null;
+            render();
+        } else if (a.act == 'clr') $('#cv').clear();
+        else if (a.act == 'back') {
+            sel = null;
+            render();
+        } else if (a.act == 'photo') $('#pf').click();
         else if (a.act == 'cam') go(openCam);
         else if (b.id == 'camx') closeCam();
         else if (b.id == 'camsnap') go(snap);
-        else if (a.item) { sel = +a.item; window.scrollTo(0, 0); render(); const i = D.items.find(x => x.id == sel);
-            if (i && i.has_photo && !PH[sel]) go(async () => { const id = sel, r = await api(`/items/${id}/photo`); PH[id] = r.photo; if (sel == id) render(); }); }
-        else if (a.act) go(async () => {
-            if (a.act == 'more') { await hist(true); render(); return; }
-            if (a.act == 'sig') { const box = $('#s' + a.id); if (box.innerHTML) { box.innerHTML = ''; return; }
-                const r = await api(`/handovers/${a.id}/signature`); box.innerHTML = `<img alt="Unterschrift" src="${r.signature}" style="width:100%;border:1px solid #ddd">`; return; }
-            if (a.act == 'phdel') { if (!confirm('Foto entfernen?')) return; await api(`/items/${sel}/photo`, 'DELETE'); delete PH[sel]; flash('Foto entfernt'); }
-            if (a.act == 'orem') { if (!confirm('Funktionär wirklich entfernen?')) return; await api('/officials/' + a.id, 'DELETE'); flash('Funktionär entfernt'); }
-            if (a.act == 'pedit') { const n = prompt('Neuer Name', D.players.find(x => x.id == a.id).name); if (!n || !n.trim()) return; await api('/players/' + a.id, 'PUT', {name: n}); }
-            if (a.act == 'pdel') { if (!confirm('Spieler wirklich löschen?')) return; await api('/players/' + a.id, 'DELETE'); }
-            if (a.act == 'isave') { await api('/items/' + a.id, 'PUT', {total_qty: +$('#q' + a.id).value}); flash('Gespeichert'); }
-            if (a.act == 'idel') { if (!confirm('Kleidungsstück wirklich löschen?')) return; await api('/items/' + a.id, 'DELETE'); }
-            if (a.act == 'ocode') { const r = await api(`/officials/${a.id}/code`, 'POST'); showCode(D.officials.find(x => x.id == a.id).name, r.code); }
-            await load(); render();
+        else if (a.item) {
+            sel = +a.item;
+            window.scrollTo(0, 0);
+            render();
+            const i = D.items.find(x => x.id == sel);
+            if (i && i.has_photo && !PH[sel]) go(async () => {
+                const id = sel, r = await api(`/items/${id}/photo`);
+                PH[id] = r.photo;
+                if (sel == id) render();
+            });
+        } else if (a.act) go(async () => {
+            if (a.act == 'more') {
+                await hist(true);
+                render();
+                return;
+            }
+            if (a.act == 'sig') {
+                const box = $('#s' + a.id);
+                if (box.innerHTML) {
+                    box.innerHTML = '';
+                    return;
+                }
+                const r = await api(`/handovers/${a.id}/signature`);
+                box.innerHTML = `<img alt="Unterschrift" src="${r.signature}" style="width:100%;border:1px solid #ddd">`;
+                return;
+            }
+            if (a.act == 'phdel') {
+                if (!confirm('Foto entfernen?')) return;
+                await api(`/items/${sel}/photo`, 'DELETE');
+                delete PH[sel];
+                flash('Foto entfernt');
+            }
+            if (a.act == 'orem') {
+                if (!confirm('Funktionär wirklich entfernen?')) return;
+                await api('/officials/' + a.id, 'DELETE');
+                flash('Funktionär entfernt');
+            }
+            if (a.act == 'pedit') {
+                const n = prompt('Neuer Name', D.players.find(x => x.id == a.id).name);
+                if (!n || !n.trim()) return;
+                await api('/players/' + a.id, 'PUT', {name: n});
+            }
+            if (a.act == 'pdel') {
+                if (!confirm('Spieler wirklich löschen?')) return;
+                await api('/players/' + a.id, 'DELETE');
+            }
+            if (a.act == 'isave') {
+                await api('/items/' + a.id, 'PUT', {total_qty: +$('#q' + a.id).value});
+                flash('Gespeichert');
+            }
+            if (a.act == 'idel') {
+                if (!confirm('Kleidungsstück wirklich löschen?')) return;
+                await api('/items/' + a.id, 'DELETE');
+            }
+            if (a.act == 'ocode') {
+                const r = await api(`/officials/${a.id}/code`, 'POST');
+                showCode(D.officials.find(x => x.id == a.id).name, r.code);
+            }
+            await load();
+            render();
         });
     });
     let lastY = 0;   // Übergabe-Button: beim Runterscrollen ausblenden, beim Hochscrollen wieder zeigen
     addEventListener('scroll', () => {
-        const y = scrollY; if (Math.abs(y - lastY) < 8) return;
-        $('#fab').classList.toggle('away', y > lastY && y > 80); lastY = y;
+        const y = scrollY;
+        if (Math.abs(y - lastY) < 8) return;
+        $('#fab').classList.toggle('away', y > lastY && y > 80);
+        lastY = y;
     }, {passive: true});
-    (async () => { if (store.getItem('tok') && !RESET) { try { await loadMe(); await load(); } catch (e) {} } render(); })();
+    (async () => {
+        if (store.getItem('tok') && !RESET) {
+            try {
+                await loadMe();
+                await load();
+            } catch (e) {
+            }
+        }
+        render();
+    })();
 </script>
 </body>
 </html>
