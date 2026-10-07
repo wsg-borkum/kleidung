@@ -689,6 +689,28 @@
             font-weight: 700;
             letter-spacing: -.01em
         }
+
+        .chk {
+            display: flex;
+            align-items: center;
+            gap: .7rem;
+            min-height: 48px;
+            font-weight: 600
+        }
+
+        input[type=checkbox] {
+            width: 26px;
+            height: 26px;
+            min-height: 0;
+            padding: 0;
+            accent-color: var(--ball)
+        }
+
+        .pf {
+            display: flex;
+            flex-direction: column;
+            gap: .5rem
+        }
     </style>
 </head>
 <body>
@@ -736,6 +758,10 @@
         no_club: 'Kein Verein zugeordnet',
         invalid_token: 'Link ungültig oder abgelaufen',
         invalid_photo: 'Foto ungültig',
+        refund_too_high: 'Rückzahlung höher als der Pfand',
+        note_required: 'Bitte eine Notiz zum einbehaltenen Betrag angeben',
+        invalid_deposit_cents: 'Pfandbetrag ungültig',
+        invalid_refund_cents: 'Rückzahlung ungültig',
         forbidden: 'Dafür fehlt dir die Berechtigung',
         invalid_role: 'Rolle ungültig',
         last_admin: 'Es muss mindestens ein aktiver Admin bleiben',
@@ -828,11 +854,49 @@
         clear();
     }
 
+    const eur = c => (c / 100).toLocaleString('de-DE', {style: 'currency', currency: 'EUR'});
+    const cents = s => {
+        const v = parseFloat(String(s).replace(',', '.'));
+        return Number.isFinite(v) && v >= 0 ? Math.round(v * 100) : NaN;
+    };
+    const curHold = () => {
+        const p = D.players.find(x => x.id == $('#hp').value);
+        return p && p.holdings.find(x => x.item_id == $('#hi').value);
+    };
+    const share = () => {
+        const x = curHold();
+        return x && x.deposit_open_cents > 0 ? Math.round(x.deposit_open_cents / x.qty) : 0;
+    };   // Pfandanteil des Stücks
+    const rfNote = () => {
+        $('#rfn').hidden = !(cents($('#rfa').value) < share());
+    };
+
+    function syncPfand() {   // Pfand-Felder und Unterschriftenfeld je nach Richtung und Auswahl
+        const ret = dir == 'to_club', s = ret ? share() : 0;
+        $('#dpw').hidden = ret;
+        $('#dpa').hidden = !$('#dp').checked;
+        $('#rfw').hidden = !(ret && s > 0);
+        if (ret && s > 0) {
+            $('#rfa').value = (s / 100).toFixed(2).replace('.', ',');
+            rfNote();
+        }
+        $('#sg').hidden = ret && s == 0;
+        $('#sgl').textContent = ret ? 'Unterschrift: Spieler bestätigt die Rückzahlung' : 'Unterschrift des Spielers';
+    }
+
+    const pfandLine = x => x.deposit_cents ? `<small>Pfand ${eur(x.deposit_cents)} bezahlt</small>`
+        : (x.direction == 'to_club' && (x.refund_cents || x.kept_cents)) ? `<small>Pfand ${eur(x.refund_cents)} zurückgezahlt${x.kept_cents ? `, ${eur(x.kept_cents)} einbehalten: ${esc(x.note || '')}` : ''}</small>` : '';
+    const pfandPanel = () => {
+        const t = D.players.reduce((s, p) => s + p.holdings.reduce((a, x) => a + (x.deposit_open_cents || 0), 0), 0);
+        return t > 0 ? `<div class=panel><div class=row><b style="flex:1">Pfand im Verein</b><b>${eur(t)}</b></div><small>Noch nicht zurückgezahlt</small></div>` : '';
+    };
+
     function fillItems() {
         const p = D.players.find(x => x.id == $('#hp').value);
         const o = dir == 'to_player' ? D.items.filter(i => i.at_club > 0).map(i => [i.id, `${i.name} ${i.size} (${i.at_club} frei)`])
             : (p ? p.holdings.map(h => [h.item_id, `${h.name} ${h.size} (${h.qty})`]) : []);
         $('#hi').innerHTML = '<option value="">Kleidungsstück wählen</option>' + o.map(([v, t]) => `<option value="${v}">${esc(t)}</option>`).join('');
+        syncPfand();
     }
 
     function showCode(n, c) {
@@ -858,19 +922,22 @@
             reset: 'Neues Passwort setzen'
         }[lt]}</h1><div class=tabs>${[['login', 'Einloggen'], ['join', 'Beitreten'], ['club', 'Neuer Verein']].map(([k, l]) => `<button data-lt=${k} class="${lt == k ? 'on' : ''}">${l}</button>`).join('')}</div><form id=auth>${f}</form>`;
     };
-    const vOv = () => D.items.length ? `<div class=list>${D.items.map(i => `<div class=ov><button class=lnk data-item=${i.id}>${esc(i.name)}<span class=sz>${esc(i.size)}</span></button>
+    const vOvList = () => D.items.length ? `<div class=list>${D.items.map(i => `<div class=ov><button class=lnk data-item=${i.id}>${esc(i.name)}<span class=sz>${esc(i.size)}</span></button>
   <div class=bar><i class=a style="flex:${i.at_club}"></i><i class=b style="flex:${i.at_players}"></i></div>
   <div class=nums><span class=a><b>${i.at_club}</b> im Verein</span><span class=b><b>${i.at_players}</b> bei Spielern</span><span class=tot>${i.total_qty} gesamt</span></div></div>`).join('')}</div>`
         : '<div class=panel><b>Noch keine Kleidungsstücke</b><small>Lege sie im Tab „Kleidung“ an.</small></div>';
+    const vOv = () => pfandPanel() + vOvList();
     const vHo = () => `<form id=ho>
   <div class=tabs><button type=button data-dir=to_player class="${dir == 'to_player' ? 'on' : ''}">An Spieler</button><button type=button data-dir=to_club class="${dir == 'to_club' ? 'on' : ''}">Zurück an Verein</button></div>
   <select id=hp required><option value="">Spieler wählen</option>${D.players.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('')}</select>
   <select id=hi required></select>
-  <div id=sg ${dir == 'to_club' ? 'hidden' : ''}><b>Unterschrift des Spielers</b><div class=sigwrap><canvas id=cv width=600 height=220></canvas></div><button type=button data-act=clr>Unterschrift löschen</button></div>
+  <div id=dpw class=pf><label class=chk><input type=checkbox id=dp>Pfand bezahlt</label><input id=dpa inputmode=decimal placeholder="Pfandbetrag in €" aria-label="Pfandbetrag in Euro" hidden></div>
+  <div id=rfw class=pf hidden><b>Pfand zurückzahlen</b><input id=rfa inputmode=decimal aria-label="Rückzahlung in Euro"><input id=rfn placeholder="Notiz zum einbehaltenen Betrag" aria-label="Notiz zum einbehaltenen Betrag" maxlength=200 hidden></div>
+  <div id=sg><b id=sgl>Unterschrift des Spielers</b><div class=sigwrap><canvas id=cv width=600 height=220></canvas></div><button type=button data-act=clr>Unterschrift löschen</button></div>
   <button class=p>Übergabe speichern</button></form>`;
     const vHv = () => `<select id=hf style="margin-bottom:1rem"><option value="">Alle Spieler</option>${D.players.map(p => `<option value="${p.id}" ${p.id == H.pf ? 'selected' : ''}>${esc(p.name)}</option>`).join('')}</select>` +
         (H.rows.map(x => `<div class="card ${x.direction}"><div class=row><b style="flex:1">${x.direction == 'to_player' ? 'Ausgabe an' : 'Rückgabe von'} ${esc(x.player_name)}</b>${x.has_sig ? `<button data-act=sig data-id=${x.id}>Unterschrift</button>` : ''}</div>
-  <span>${esc(x.item_name)}<span class=sz>${esc(x.item_size)}</span></span><small>${new Date(x.created_at).toLocaleString('de-DE', {
+  <span>${esc(x.item_name)}<span class=sz>${esc(x.item_size)}</span></span>${pfandLine(x)}<small>${new Date(x.created_at).toLocaleString('de-DE', {
                 dateStyle: 'medium',
                 timeStyle: 'short'
             })}, ${esc(x.official_name)}</small><div id=s${x.id}></div></div>`).join('')
@@ -904,7 +971,7 @@
     });
     const vPl = () => `<form id=pa class=row><input name=name placeholder="Name des Spielers" required style="flex:1"><button class=p>Anlegen</button></form>` +
         D.players.map(p => `<div class=card><div class=row><b style="flex:1">${esc(p.name)}</b><button data-act=pedit data-id=${p.id}>Ändern</button><button class=d data-act=pdel data-id=${p.id} ${p.holdings.length ? 'disabled' : ''}>Löschen</button></div>
-  <small>${p.holdings.map(h => `${h.qty}× ${esc(h.name)} ${esc(h.size)}`).join(', ') || 'nichts ausgegeben'}</small></div>`).join('');
+  <small>${p.holdings.map(h => `${h.qty}× ${esc(h.name)} ${esc(h.size)}`).join(', ') || 'nichts ausgegeben'}</small>${p.holdings.some(x => x.deposit_open_cents > 0) ? `<small>Pfand offen: ${eur(p.holdings.reduce((a, x) => a + (x.deposit_open_cents || 0), 0))}</small>` : ''}</div>`).join('');
     const vIt = () => `<form id=ia><input name=name placeholder="Bezeichnung (z. B. Trikot)" required><div class=row><input name=size placeholder="Größe" required style="flex:1"><input name=total_qty type=number min=0 value=1 required style="width:90px"></div><button class=p>Anlegen</button></form>` +
         D.items.map(i => `<div class=card><button class=lnk data-item=${i.id}>${esc(i.name)}<span class=sz>${esc(i.size)}</span>${i.has_photo ? ' 📷' : ''}</button><small>${i.at_club} im Verein, ${i.at_players} bei Spielern</small>
   <div class=row><input type=number min=${i.at_players} value=${i.total_qty} id=q${i.id} style="width:90px"><button data-act=isave data-id=${i.id}>Stückzahl speichern</button><button class=d data-act=idel data-id=${i.id} ${i.at_players ? 'disabled' : ''}>Löschen</button></div></div>`).join('');
@@ -1029,6 +1096,7 @@
 
     document.addEventListener('change', e => {
         if (e.target.id == 'hp') fillItems();
+        else if (e.target.id == 'hi' || e.target.id == 'dp') syncPfand();
         else if (e.target.id == 'club') go(async () => {
             store.setItem('club', e.target.value);
             await loadMe();
@@ -1053,6 +1121,9 @@
             await hist();
             render();
         });
+    });
+    document.addEventListener('input', e => {
+        if (e.target.id == 'rfa') rfNote();
     });
     document.addEventListener('submit', e => {
         e.preventDefault();
@@ -1099,14 +1170,28 @@
                 await api('/password', 'POST', d);
                 flash('Passwort geändert, andere Geräte wurden abgemeldet');
             } else if (f.id == 'ho') {
-                const cv = $('#cv');
-                if (dir == 'to_player' && !cv.dirty) throw new Error(E.invalid_signature);
-                await api('/handovers', 'POST', {
-                    player_id: +$('#hp').value,
-                    item_id: +$('#hi').value,
-                    direction: dir,
-                    signature: dir == 'to_player' ? cv.toDataURL('image/png') : undefined
-                });
+                const cv = $('#cv'), pay = {player_id: +$('#hp').value, item_id: +$('#hi').value, direction: dir};
+                if (dir == 'to_player') {
+                    if (!cv.dirty) throw new Error(E.invalid_signature);
+                    pay.signature = cv.toDataURL('image/png');
+                    if ($('#dp').checked) {
+                        const c = cents($('#dpa').value);
+                        if (!(c > 0)) throw new Error('Bitte einen Pfandbetrag eingeben');
+                        pay.deposit_cents = c;
+                    }
+                } else if (share() > 0) {   // Rückgabe mit Pfand: Rückzahlung erfassen, Spieler quittiert per Unterschrift
+                    const c = cents($('#rfa').value), s = share();
+                    if (isNaN(c)) throw new Error('Bitte die Rückzahlung eingeben');
+                    if (c > s) throw new Error(E.refund_too_high);
+                    if (c < s && !$('#rfn').value.trim()) throw new Error(E.note_required);
+                    if (!cv.dirty) throw new Error(E.invalid_signature);
+                    Object.assign(pay, {
+                        refund_cents: c,
+                        note: $('#rfn').value.trim(),
+                        signature: cv.toDataURL('image/png')
+                    });
+                }
+                await api('/handovers', 'POST', pay);
                 await load();
                 flash('Übergabe gespeichert');
             }
@@ -1131,7 +1216,6 @@
         } else if (a.dir) {
             dir = a.dir;
             document.querySelectorAll('[data-dir]').forEach(x => x.classList.toggle('on', x.dataset.dir == dir));
-            $('#sg').hidden = dir == 'to_club';
             fillItems();
         } else if (b.id == 'out') {
             api('/logout', 'POST').catch(() => {
