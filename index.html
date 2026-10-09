@@ -131,7 +131,7 @@ input[type=checkbox]{width:26px;height:26px;min-height:0;padding:0;accent-color:
 <div id="cam" hidden><video id="camv" playsinline muted autoplay></video><div class="camctl"><button type="button" id="camx">Abbrechen</button><button type="button" id="camsnap" class="p">Aufnehmen</button></div></div>
 <script>
 const API = 'https://familieschmidt.biz/api';   // ohne Slash am Ende
-const BUILD = '2026-10-08';   // wird unten im Tab „Verein“ und auf der Login-Seite angezeigt, um veraltete Seiten zu erkennen
+const BUILD = '2026-10-08.3';   // wird unten im Tab „Verein“ und auf der Login-Seite angezeigt, um veraltete Seiten zu erkennen
 const store = localStorage;                        // sessionStorage: Login endet mit dem Tab
 const E = {invalid_credentials:'E-Mail oder Passwort falsch', invalid_code:'Code oder E-Mail ungültig bzw. abgelaufen',
   email_taken:'E-Mail ist bereits vergeben', invalid_email:'E-Mail ungültig', invalid_password:'Passwort mindestens 8 Zeichen',
@@ -173,7 +173,10 @@ function pad(c) {
   const x = c.getContext('2d'); let d = false;
   const clear = () => { x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.strokeStyle = '#000'; x.lineWidth = Math.max(3, c.width / 200); x.lineCap = 'round'; c.dirty = false; };
   const pt = e => { const r = c.getBoundingClientRect(); return [(e.clientX - r.left) * c.width / r.width, (e.clientY - r.top) * c.height / r.height]; };
-  c.onpointerdown = e => { d = true; c.setPointerCapture(e.pointerId); x.beginPath(); x.moveTo(...pt(e)); };
+  c.onpointerdown = e => { d = true; const [a, b] = pt(e);
+    x.fillStyle = '#000'; x.beginPath(); x.arc(a, b, x.lineWidth * 0.9, 0, 7); x.fill(); c.dirty = true;   // schon ein einfaches Tippen setzt einen Punkt
+    x.beginPath(); x.moveTo(a, b);
+    try { c.setPointerCapture(e.pointerId); } catch (err) {} };   // ein Fehler hier darf den Punkt nicht verhindern
   c.onpointermove = e => { if (!d) return; x.lineTo(...pt(e)); x.stroke(); c.dirty = true; };
   c.onpointerup = c.onpointercancel = () => d = false;
   c.clear = clear; clear();
