@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0f4a5c">
 <meta name="color-scheme" content="light dark">
-<title>MeinZeugwart</title>
+<title>Vereinsverwaltung</title>
 <style>
 :root{
   --ink:#101c26;--sub:#586a77;--bg:#edf1f3;--surface:#fff;--line:#d9e2e7;
@@ -128,14 +128,14 @@ input[type=checkbox]{width:26px;height:26px;min-height:0;padding:0;accent-color:
 </style>
 </head>
 <body>
-<header><b id="title">MeinZeugwart</b><select id="club" hidden></select><button id="out" hidden aria-label="Abmelden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4H5v16h5M15 8l4 4-4 4M19 12H9"/></svg></button></header>
+<header><b id="title">Vereinsverwaltung</b><select id="club" hidden></select><button id="out" hidden aria-label="Abmelden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4H5v16h5M15 8l4 4-4 4M19 12H9"/></svg></button></header>
 <main id="m"></main>
 <nav id="nav" hidden></nav>
 <button id="fab" data-tab="ho" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h12m0 0l-3-3m3 3l-3 3M17 17H5m0 0l3-3m-3 3l3 3"/></svg>Übergabe</button>
 <div id="sig" hidden><div class="sigbar"><b id="sigl">Unterschrift</b><span class="sighint">Für mehr Platz das Handy ins Querformat drehen</span><div class="sigbtns"><button type="button" id="sigx">Abbrechen</button><button type="button" id="sigclr">Löschen</button><button type="button" id="sigok" class="p">Fertig</button></div></div><div class="sigarea"><div class="sigwrap"><canvas id="bigcv"></canvas></div></div></div>
 <div id="cam" hidden><video id="camv" playsinline muted autoplay></video><div class="camctl"><button type="button" id="camx">Abbrechen</button><button type="button" id="camsnap" class="p">Aufnehmen</button></div></div>
 <script>
-const API = 'https://familieschmidt.biz/api';   // ohne Slash am Ende
+const API = 'https://DEINE-HETZNER-DOMAIN/api';   // ohne Slash am Ende
 const BUILD = '2026-10-08.4';   // wird unten im Tab „Verein“ und auf der Login-Seite angezeigt, um veraltete Seiten zu erkennen
 const store = localStorage;                        // sessionStorage: Login endet mit dem Tab
 const E = {invalid_credentials:'E-Mail oder Passwort falsch', invalid_code:'Code oder E-Mail ungültig bzw. abgelaufen',
@@ -352,7 +352,7 @@ function render() {
   $('#fab').hidden = !me || tab == 'ho';
   const multi = me && me.clubs.length > 1;
   $('#title').hidden = multi; $('#club').hidden = !multi;
-  $('#title').textContent = me ? (me.club_name || 'MeinZeugwart') : 'MeinZeugwart';
+  $('#title').textContent = me ? (me.club_name || 'Vereinsverwaltung') : 'Vereinsverwaltung';
   if (multi) $('#club').innerHTML = me.clubs.map(c => `<option value="${c.id}" ${c.id == me.id ? 'selected' : ''}>${esc(c.club_name)}</option>`).join('');
   const h = msg ? `<div class="msg ${msg.c}">${msg.h}</div>` : ''; msg = null;
   if (!me) { $('#m').innerHTML = h + vLogin(); return; }
